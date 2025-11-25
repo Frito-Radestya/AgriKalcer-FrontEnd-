@@ -1,6 +1,8 @@
-import { useData, PLANT_TYPES } from '@/context/DataContext'
+import { useData } from '@/context/useData'
+import { PLANT_TYPES } from '@/context/plantTypes'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { formatCurrency } from '@/lib/utils'
+import { useState } from 'react'
 import {
   LineChart,
   Line,
@@ -22,28 +24,90 @@ const COLORS = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'
 
 export function Analytics() {
   const { plants, harvests, finances } = useData()
+  const [timePeriod, setTimePeriod] = useState('monthly')
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
 
-  // Financial trend by month
-  const financialTrend = finances.reduce((acc, finance) => {
-    const month = new Date(finance.date).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })
-    if (!acc[month]) {
-      acc[month] = { month, income: 0, expense: 0 }
+  const filterDataByPeriod = (data, period) => {
+    if (period === 'custom' && startDate && endDate) {
+      return data.filter(item => {
+        const itemDate = new Date(item.date)
+        const start = new Date(startDate)
+        const end = new Date(endDate)
+        return itemDate >= start && itemDate <= end
+      })
+    }
+    
+    const now = new Date()
+    const filteredData = data.filter(item => {
+      const itemDate = new Date(item.date)
+      switch (period) {
+        case 'daily':
+          return itemDate.toDateString() === now.toDateString()
+        case 'weekly':
+          const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+          return itemDate >= weekAgo
+        case 'monthly':
+          return itemDate.getMonth() === now.getMonth() && itemDate.getFullYear() === now.getFullYear()
+        case 'yearly':
+          return itemDate.getFullYear() === now.getFullYear()
+        default:
+          return true
+      }
+    })
+    return filteredData
+  }
+
+  // Financial trend by period
+  const filteredFinances = filterDataByPeriod(finances, timePeriod)
+  const financialTrend = filteredFinances.reduce((acc, finance) => {
+    let periodKey
+    switch (timePeriod) {
+      case 'daily':
+        periodKey = new Date(finance.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
+        break
+      case 'weekly':
+        periodKey = `Minggu ${Math.ceil(new Date(finance.date).getDate() / 7)}`
+        break
+      case 'monthly':
+        periodKey = new Date(finance.date).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })
+        break
+      case 'yearly':
+        periodKey = new Date(finance.date).getFullYear().toString()
+        break
+      case 'custom':
+        periodKey = new Date(finance.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
+        break
+      default:
+        periodKey = new Date(finance.date).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })
+    }
+    
+    if (!acc[periodKey]) {
+      acc[periodKey] = { period: periodKey, income: 0, expense: 0 }
     }
     if (finance.type === 'income') {
-      acc[month].income += finance.amount
+      acc[periodKey].income += finance.amount
     } else {
-      acc[month].expense += finance.amount
+      acc[periodKey].expense += finance.amount
     }
     return acc
   }, {})
 
   const financialData = Object.values(financialTrend).map(item => ({
-    ...item,
-    profit: item.income - item.expense
-  }))
+    month: item.period,
+    income: item.income || 0,
+    expense: item.expense || 0,
+    profit: (item.income || 0) - (item.expense || 0)
+  })).sort((a, b) => {
+    // Sort by date to ensure proper order
+    const dateA = new Date(a.month)
+    const dateB = new Date(b.month)
+    return dateA - dateB
+  })
 
   // Harvest by plant type
-  const harvestByType = harvests.reduce((acc, harvest) => {
+  const filteredHarvests = filterDataByPeriod(harvests, timePeriod)
+  const harvestByType = filteredHarvests.reduce((acc, harvest) => {
     const plant = plants.find(p => p.id === harvest.plantId)
     if (plant) {
       const plantType = PLANT_TYPES.find(pt => pt.id === plant.plantType)
@@ -68,7 +132,7 @@ export function Analytics() {
   ]
 
   // Revenue by plant
-  const revenueByPlant = harvests.reduce((acc, harvest) => {
+  const revenueByPlant = filteredHarvests.reduce((acc, harvest) => {
     if (!acc[harvest.plantName]) {
       acc[harvest.plantName] = 0
     }
@@ -90,35 +154,35 @@ export function Analytics() {
     : 0
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 lg:space-y-10">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold">Analisis & Statistik</h2>
+        <h2 className="text-3xl font-extrabold tracking-tight brand-title">Analisis & Statistik</h2>
         <p className="text-muted-foreground">Visualisasi data pertanian Anda</p>
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-6 pt-2">
             <p className="text-sm text-muted-foreground">Total Tanaman</p>
             <p className="text-3xl font-bold mt-2">{plants.length}</p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-6 pt-2">
             <p className="text-sm text-muted-foreground">Total Panen</p>
             <p className="text-3xl font-bold mt-2">{harvests.length}</p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-6 pt-2">
             <p className="text-sm text-muted-foreground">Rata-rata Hasil</p>
             <p className="text-3xl font-bold mt-2">{avgHarvestAmount.toFixed(1)} kg</p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-6 pt-2">
             <p className="text-sm text-muted-foreground">Laba Bersih</p>
             <p className={`text-2xl font-bold mt-2 ${totalProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               {formatCurrency(totalProfit)}
@@ -131,50 +195,169 @@ export function Analytics() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Financial Trend */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              Tren Keuangan
-            </CardTitle>
+          <CardHeader className="brand-header-gradient">
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2 tracking-tight">
+                <TrendingUp className="h-5 w-5" />
+                Tren Keuangan
+              </CardTitle>
+              <div className="flex items-center gap-2">
+                <select 
+                  value={timePeriod}
+                  onChange={(e) => setTimePeriod(e.target.value)}
+                  className="bg-white/10 border border-white/20 text-white px-3 py-1 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
+                >
+                  <option value="daily" className="bg-[#0b130f]">Harian</option>
+                  <option value="weekly" className="bg-[#0b130f]">Mingguan</option>
+                  <option value="monthly" className="bg-[#0b130f]">Bulanan</option>
+                  <option value="yearly" className="bg-[#0b130f]">Tahunan</option>
+                  <option value="custom" className="bg-[#0b130f]">Custom</option>
+                </select>
+                {timePeriod === 'custom' && (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      className="bg-white/10 border border-white/20 text-white px-2 py-1 rounded text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
+                      placeholder="Mulai"
+                    />
+                    <input
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      className="bg-white/10 border border-white/20 text-white px-2 py-1 rounded text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
+                      placeholder="Selesai"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-2">
             {financialData.length === 0 ? (
               <p className="text-center text-muted-foreground py-8">
                 Belum ada data keuangan
               </p>
             ) : (
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={financialData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip formatter={(value) => formatCurrency(value)} />
-                  <Legend />
-                  <Line type="monotone" dataKey="income" stroke="#22c55e" name="Pemasukan" strokeWidth={2} />
-                  <Line type="monotone" dataKey="expense" stroke="#ef4444" name="Pengeluaran" strokeWidth={2} />
-                  <Line type="monotone" dataKey="profit" stroke="#3b82f6" name="Laba" strokeWidth={2} />
-                </LineChart>
-              </ResponsiveContainer>
+              <>
+                {/* Debug info - remove this in production */}
+                {console.log('Financial Data:', financialData)}
+                {console.log('Filtered Finances:', filteredFinances)}
+                {console.log('Income Data:', financialData.map(d => ({ month: d.month, income: d.income })))}
+                <ResponsiveContainer width="100%" height={220}>
+                  <LineChart data={financialData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                    <XAxis 
+                      dataKey="month" 
+                      stroke="#9ca3af"
+                      tick={{ fill: '#9ca3af', fontSize: 12 }}
+                    />
+                    <YAxis 
+                      stroke="#9ca3af"
+                      tick={{ fill: '#9ca3af', fontSize: 12 }}
+                    />
+                    <Tooltip 
+                      formatter={(value) => formatCurrency(value)}
+                      contentStyle={{ 
+                        backgroundColor: '#1f2937', 
+                        border: '1px solid #374151',
+                        borderRadius: '8px'
+                      }}
+                    />
+                    <Legend />
+                    <Line 
+                      type="monotone" 
+                      dataKey="income" 
+                      stroke="#22c55e" 
+                      name="Pemasukan" 
+                      strokeWidth={3}
+                      dot={{ fill: '#22c55e', r: 5 }}
+                      activeDot={{ r: 7 }}
+                      connectNulls={false}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="expense" 
+                      stroke="#ef4444" 
+                      name="Pengeluaran" 
+                      strokeWidth={2}
+                      dot={{ fill: '#ef4444', r: 4 }}
+                      activeDot={{ r: 6 }}
+                      connectNulls={false}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="profit" 
+                      stroke="#3b82f6" 
+                      name="Laba" 
+                      strokeWidth={2}
+                      dot={{ fill: '#3b82f6', r: 4 }}
+                      activeDot={{ r: 6 }}
+                      connectNulls={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+                {/* Additional debug info */}
+                <div className="text-xs text-gray-500 mt-2">
+                  Debug: {financialData.length} data points | 
+                  Income: {financialData.reduce((sum, d) => sum + d.income, 0).toLocaleString()} | 
+                  Expense: {financialData.reduce((sum, d) => sum + d.expense, 0).toLocaleString()}
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
 
         {/* Revenue by Plant */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
-              Pendapatan per Tanaman (Top 5)
-            </CardTitle>
+          <CardHeader className="brand-header-gradient">
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2 tracking-tight">
+                <BarChart3 className="h-5 w-5" />
+                Pendapatan per Tanaman (Top 5)
+              </CardTitle>
+              <div className="flex items-center gap-2">
+                <select 
+                  value={timePeriod}
+                  onChange={(e) => setTimePeriod(e.target.value)}
+                  className="bg-white/10 border border-white/20 text-white px-3 py-1 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
+                >
+                  <option value="daily" className="bg-[#0b130f]">Harian</option>
+                  <option value="weekly" className="bg-[#0b130f]">Mingguan</option>
+                  <option value="monthly" className="bg-[#0b130f]">Bulanan</option>
+                  <option value="yearly" className="bg-[#0b130f]">Tahunan</option>
+                  <option value="custom" className="bg-[#0b130f]">Custom</option>
+                </select>
+                {timePeriod === 'custom' && (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      className="bg-white/10 border border-white/20 text-white px-2 py-1 rounded text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
+                      placeholder="Mulai"
+                    />
+                    <input
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      className="bg-white/10 border border-white/20 text-white px-2 py-1 rounded text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
+                      placeholder="Selesai"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-2">
             {revenueData.length === 0 ? (
               <p className="text-center text-muted-foreground py-8">
                 Belum ada data panen
               </p>
             ) : (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={revenueData}>
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={revenueData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
                   <YAxis />
@@ -189,13 +372,13 @@ export function Analytics() {
 
         {/* Harvest by Type */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+          <CardHeader className="brand-header-gradient">
+            <CardTitle className="flex items-center gap-2 tracking-tight">
               <PieChartIcon className="h-5 w-5" />
               Hasil Panen per Jenis Tanaman
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-2">
             {harvestData.length === 0 ? (
               <p className="text-center text-muted-foreground py-8">
                 Belum ada data panen
@@ -226,13 +409,13 @@ export function Analytics() {
 
         {/* Plant Status */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+          <CardHeader className="brand-header-gradient">
+            <CardTitle className="flex items-center gap-2 tracking-tight">
               <PieChartIcon className="h-5 w-5" />
               Status Tanaman
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-2">
             {plants.length === 0 ? (
               <p className="text-center text-muted-foreground py-8">
                 Belum ada data tanaman
@@ -264,8 +447,8 @@ export function Analytics() {
 
       {/* Summary Table */}
       <Card>
-        <CardHeader>
-          <CardTitle>Ringkasan Keuangan</CardTitle>
+        <CardHeader className="brand-header-gradient">
+          <CardTitle className="tracking-tight">Ringkasan Keuangan</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">

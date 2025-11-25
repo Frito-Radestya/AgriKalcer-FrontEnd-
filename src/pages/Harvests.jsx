@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useData } from '@/context/DataContext'
+import { useState, useEffect } from 'react'
+import { useData } from '@/context/useData'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Input, Label, Select } from '@/components/ui/Input'
@@ -7,13 +7,14 @@ import { Modal } from '@/components/ui/Modal'
 import { Badge } from '@/components/ui/Badge'
 import { ExportButtons } from '@/components/ExportButtons'
 import { formatDate, formatCurrency } from '@/lib/utils'
-import { calculateProductivity, calculateAverageProductivity } from '@/lib/reminderSystem'
-import { Plus, Edit, Trash2, TrendingUp, Calendar, DollarSign, Target } from 'lucide-react'
+import { PLANT_TYPES } from '@/context/plantTypes'
+import { Plus, Edit, Trash2, TrendingUp, Calendar, DollarSign, Target, Sprout } from 'lucide-react'
 
 export function Harvests() {
   const { harvests, addHarvest, updateHarvest, deleteHarvest, plants } = useData()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingHarvest, setEditingHarvest] = useState(null)
+  const [isDataLoaded, setIsDataLoaded] = useState(false)
   const [formData, setFormData] = useState({
     plantId: '',
     date: new Date().toISOString().split('T')[0],
@@ -24,9 +25,69 @@ export function Harvests() {
     notes: '',
   })
 
+  // Check if data is loaded
+  useEffect(() => {
+    if (harvests.length > 0 || plants.length > 0) {
+      setIsDataLoaded(true)
+    }
+  }, [harvests, plants])
+
   const activePlants = plants.filter(p => p.status === 'active')
 
-  const handleSubmit = (e) => {
+  const getPlantTypeInfo = (plantTypeId) => {
+    // Use PLANT_TYPES for consistent icon mapping
+    const plantType = PLANT_TYPES.find(p => p.id === plantTypeId)
+    return plantType || { icon: '🌱' }
+  }
+
+  const safeParseNumber = (value, fallback = 0) => {
+    if (value === undefined || value === null || value === '') return fallback
+    const parsed = typeof value === 'number' ? value : parseFloat(value)
+    return Number.isFinite(parsed) ? parsed : fallback
+  }
+
+  const calculateProductivity = (harvest, plant) => {
+    const landArea = safeParseNumber(plant?.landArea)
+    if (landArea <= 0) return 0
+    
+    const amount = safeParseNumber(harvest.amount)
+    const unit = harvest.unit || 'kg'
+    
+    // Convert amount to kg based on unit
+    let amountInKg = amount
+    if (unit === 'ton') {
+      amountInKg = amount * 1000 // 1 ton = 1000 kg
+    } else if (unit === 'kuintal') {
+      amountInKg = amount * 100 // 1 kuintal = 100 kg
+    }
+    
+    const productivity = Number((amountInKg / landArea).toFixed(2))
+    
+    return productivity
+  }
+
+  const getRevenue = (harvest) => {
+    const revenue = safeParseNumber(harvest.revenue, null)
+    if (revenue !== null) {
+      return revenue
+    }
+    
+    const amount = safeParseNumber(harvest.amount)
+    const price = safeParseNumber(harvest.pricePerKg)
+    const unit = harvest.unit || 'kg'
+    
+    // Convert amount to kg based on unit
+    let amountInKg = amount
+    if (unit === 'ton') {
+      amountInKg = amount * 1000 // 1 ton = 1000 kg
+    } else if (unit === 'kuintal') {
+      amountInKg = amount * 100 // 1 kuintal = 100 kg
+    }
+    
+    return Number((amountInKg * price).toFixed(2))
+  }
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
     
     const plant = plants.find(p => p.id === parseInt(formData.plantId))
@@ -35,13 +96,21 @@ export function Harvests() {
       plantId: parseInt(formData.plantId),
       plantName: plant?.plantName || '',
       amount: parseFloat(formData.amount),
+      unit: formData.unit,
       pricePerKg: parseFloat(formData.pricePerKg),
+      quality: formData.quality,
     }
     
-    if (editingHarvest) {
-      updateHarvest(editingHarvest.id, harvestData)
-    } else {
-      addHarvest(harvestData)
+    try {
+      if (editingHarvest) {
+        await updateHarvest(editingHarvest.id, harvestData)
+      } else {
+        await addHarvest(harvestData)
+      }
+      
+      
+    } catch (error) {
+      console.error('Error saving harvest:', error)
     }
     
     handleCloseModal()
@@ -81,22 +150,29 @@ export function Harvests() {
     })
   }
 
-  // Calculate totals
-  const totalAmount = harvests.reduce((sum, h) => sum + h.amount, 0)
-  const totalRevenue = harvests.reduce((sum, h) => sum + h.revenue, 0)
-  const avgProductivity = calculateAverageProductivity(harvests, plants)
+  // Calculate totals only when data is loaded
+  const totalAmount = harvests.reduce((sum, h) => sum + safeParseNumber(h.amount), 0)
+  const totalRevenue = harvests.reduce((sum, h) => sum + getRevenue(h), 0)
+  const productivityData = isDataLoaded ? harvests.reduce((acc, harvest) => {
+    const plant = plants.find(p => p.id === harvest.plantId)
+    const productivity = calculateProductivity(harvest, plant)
+    acc[harvest.id] = productivity
+    return acc
+  }, {}) : {}
+  const totalProductivity = Object.values(productivityData).reduce((sum, value) => sum + value, 0)
+  const averageProductivity = harvests.length ? totalProductivity / harvests.length : 0
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 lg:space-y-10">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold">Data Panen</h2>
+          <h2 className="text-3xl font-extrabold tracking-tight brand-title">Data Panen</h2>
           <p className="text-muted-foreground">Catat hasil panen dan pendapatan</p>
         </div>
         <div className="flex gap-2">
           <ExportButtons type="harvests" data={harvests} />
-          <Button onClick={() => setIsModalOpen(true)} disabled={activePlants.length === 0}>
+          <Button onClick={() => setIsModalOpen(true)} disabled={activePlants.length === 0} className="brand-btn">
             <Plus className="h-4 w-4 mr-2" />
             Tambah Panen
           </Button>
@@ -104,7 +180,7 @@ export function Harvests() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -113,7 +189,7 @@ export function Harvests() {
                 <p className="text-2xl font-bold mt-1">{harvests.length}</p>
               </div>
               <div className="bg-green-100 dark:bg-green-900 p-3 rounded-lg">
-                <Calendar className="h-6 w-6 text-green-600" />
+                <Calendar className="h-6 w-6 text-green-700" />
               </div>
             </div>
           </CardContent>
@@ -126,8 +202,8 @@ export function Harvests() {
                 <p className="text-sm text-muted-foreground">Total Hasil</p>
                 <p className="text-2xl font-bold mt-1">{totalAmount.toFixed(1)} kg</p>
               </div>
-              <div className="bg-blue-100 dark:bg-blue-900 p-3 rounded-lg">
-                <TrendingUp className="h-6 w-6 text-blue-600" />
+              <div className="bg-yellow-100 dark:bg-yellow-900 p-3 rounded-lg">
+                <TrendingUp className="h-6 w-6 text-green-700" />
               </div>
             </div>
           </CardContent>
@@ -138,10 +214,10 @@ export function Harvests() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Produktivitas Rata-rata</p>
-                <p className="text-2xl font-bold mt-1">{avgProductivity} kg/m²</p>
+                <p className="text-2xl font-bold mt-1">{averageProductivity.toFixed(2)} kg/m²</p>
               </div>
-              <div className="bg-purple-100 dark:bg-purple-900 p-3 rounded-lg">
-                <Target className="h-6 w-6 text-purple-600" />
+              <div className="bg-green-100 dark:bg-green-900 p-3 rounded-lg">
+                <Target className="h-6 w-6 text-green-700" />
               </div>
             </div>
           </CardContent>
@@ -155,7 +231,7 @@ export function Harvests() {
                 <p className="text-2xl font-bold mt-1">{formatCurrency(totalRevenue)}</p>
               </div>
               <div className="bg-yellow-100 dark:bg-yellow-900 p-3 rounded-lg">
-                <DollarSign className="h-6 w-6 text-yellow-600" />
+                <DollarSign className="h-6 w-6 text-green-700" />
               </div>
             </div>
           </CardContent>
@@ -164,7 +240,7 @@ export function Harvests() {
 
       {activePlants.length === 0 && (
         <Card>
-          <CardContent className="py-12 text-center">
+          <CardContent className="py-14 text-center">
             <p className="text-muted-foreground">
               Tidak ada tanaman aktif. Tambahkan tanaman terlebih dahulu.
             </p>
@@ -176,29 +252,37 @@ export function Harvests() {
       {harvests.length === 0 ? (
         activePlants.length > 0 && (
           <Card>
-            <CardContent className="py-12 text-center">
+            <CardContent className="py-14 text-center">
               <p className="text-muted-foreground">
-                Belum ada data panen. Klik tombol "Tambah Panen" untuk memulai.
+                Belum ada data panen. Klik tombol &quot;Tambah Panen&quot; untuk memulai.
               </p>
             </CardContent>
           </Card>
         )
       ) : (
         <Card>
-          <CardHeader>
-            <CardTitle>Riwayat Panen</CardTitle>
+          <CardHeader className="brand-header-gradient">
+            <CardTitle className="tracking-tight">Riwayat Panen</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
+          <CardContent className="pt-2">
+            <div className="space-y-4">
               {harvests.map((harvest) => {
                 const plant = plants.find(p => p.id === harvest.plantId)
-                const productivity = plant ? calculateProductivity(harvest, plant) : 0
+                const productivity = productivityData[harvest.id] ?? 0
+                const plantTypeInfo = getPlantTypeInfo(plant?.plantType)
                 
                 return (
                   <div
                     key={harvest.id}
                     className="flex items-start gap-4 p-4 bg-muted rounded-lg"
                   >
+                    <div className="flex-shrink-0">
+                      <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
+                        <span className="text-2xl">
+                          {plantTypeInfo?.icon || '🌱'}
+                        </span>
+                      </div>
+                    </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-2">
                         <h4 className="font-medium">{harvest.plantName}</h4>
@@ -229,13 +313,26 @@ export function Harvests() {
                         <div>
                           <span className="text-muted-foreground">Total Pendapatan</span>
                           <p className="font-medium text-green-600">
-                            {formatCurrency(harvest.revenue)}
+                            {formatCurrency(getRevenue(harvest))}
                           </p>
                         </div>
                         <div>
                           <span className="text-muted-foreground">Produktivitas</span>
                           <p className="font-medium text-purple-600">
-                            {productivity} kg/m²
+                            {productivity.toFixed(2)} kg/m²
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {(() => {
+                              const amount = safeParseNumber(harvest.amount)
+                              const unit = harvest.unit || 'kg'
+                              let amountInKg = amount
+                              if (unit === 'ton') {
+                                amountInKg = amount * 1000
+                              } else if (unit === 'kuintal') {
+                                amountInKg = amount * 100
+                              }
+                              return `${amountInKg} kg ÷ ${safeParseNumber(plant?.landArea)} m²`
+                            })()}
                           </p>
                         </div>
                         <div>
@@ -343,7 +440,7 @@ export function Harvests() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="pricePerKg">Harga per Kg (Rp) *</Label>
+            <Label htmlFor="pricePerKg">Harga per Kilogram (Rp) *</Label>
             <Input
               id="pricePerKg"
               type="number"
@@ -352,6 +449,9 @@ export function Harvests() {
               onChange={(e) => setFormData({ ...formData, pricePerKg: e.target.value })}
               required
             />
+            <p className="text-xs text-muted-foreground">
+              💡 Harga per kg (sistem akan otomatis konversi untuk ton/kuintal)
+            </p>
           </div>
 
           <div className="space-y-2">
@@ -382,7 +482,21 @@ export function Harvests() {
             <div className="bg-primary/10 p-4 rounded-lg">
               <p className="text-sm text-muted-foreground">Total Pendapatan</p>
               <p className="text-2xl font-bold text-primary">
-                {formatCurrency(parseFloat(formData.amount) * parseFloat(formData.pricePerKg))}
+                {(() => {
+                  const amount = parseFloat(formData.amount)
+                  const price = parseFloat(formData.pricePerKg)
+                  const unit = formData.unit || 'kg'
+                  
+                  // Convert amount to kg based on unit
+                  let amountInKg = amount
+                  if (unit === 'ton') {
+                    amountInKg = amount * 1000
+                  } else if (unit === 'kuintal') {
+                    amountInKg = amount * 100
+                  }
+                  
+                  return formatCurrency(amountInKg * price)
+                })()}
               </p>
             </div>
           )}

@@ -1,6 +1,7 @@
 // LocalStorage helper functions
 const STORAGE_KEYS = {
   USER: 'lumbung_tani_user',
+  TOKEN: 'lumbung_tani_token',
   PLANTS: 'lumbung_tani_plants',
   MAINTENANCE: 'lumbung_tani_maintenance',
   HARVESTS: 'lumbung_tani_harvests',
@@ -9,10 +10,17 @@ const STORAGE_KEYS = {
   NOTIFICATIONS: 'lumbung_tani_notifications',
 }
 
+// Get user-specific key
+function getUserKey(baseKey, userId) {
+  if (!userId) return STORAGE_KEYS[baseKey]
+  return `${STORAGE_KEYS[baseKey]}_user_${userId}`
+}
+
 export const storage = {
-  get(key) {
+  get(key, userId = null) {
     try {
-      const item = localStorage.getItem(STORAGE_KEYS[key])
+      const storageKey = getUserKey(key, userId)
+      const item = localStorage.getItem(storageKey)
       return item ? JSON.parse(item) : null
     } catch (error) {
       console.error(`Error getting ${key} from storage:`, error)
@@ -20,17 +28,19 @@ export const storage = {
     }
   },
 
-  set(key, value) {
+  set(key, value, userId = null) {
     try {
-      localStorage.setItem(STORAGE_KEYS[key], JSON.stringify(value))
+      const storageKey = getUserKey(key, userId)
+      localStorage.setItem(storageKey, JSON.stringify(value))
     } catch (error) {
       console.error(`Error setting ${key} to storage:`, error)
     }
   },
 
-  remove(key) {
+  remove(key, userId = null) {
     try {
-      localStorage.removeItem(STORAGE_KEYS[key])
+      const storageKey = getUserKey(key, userId)
+      localStorage.removeItem(storageKey)
     } catch (error) {
       console.error(`Error removing ${key} from storage:`, error)
     }
@@ -40,17 +50,35 @@ export const storage = {
     try {
       Object.values(STORAGE_KEYS).forEach(key => {
         localStorage.removeItem(key)
+        // Also clear all user-specific keys
+        Object.keys(localStorage).forEach(localKey => {
+          if (localKey.startsWith(key + '_user_')) {
+            localStorage.removeItem(localKey)
+          }
+        })
       })
     } catch (error) {
       console.error('Error clearing storage:', error)
     }
+  },
+
+  // Clear user-specific data
+  clearUserData(userId) {
+    try {
+      ['PLANTS', 'MAINTENANCE', 'HARVESTS', 'FINANCES', 'LANDS', 'NOTIFICATIONS'].forEach(key => {
+        const storageKey = getUserKey(key, userId)
+        localStorage.removeItem(storageKey)
+      })
+    } catch (error) {
+      console.error('Error clearing user data:', error)
+    }
   }
 }
 
-// Initialize default data
+// Initialize default data (only for users list, not user-specific data)
 export function initializeDefaultData() {
-  // Default users
-  if (!storage.get('USER')) {
+  // Default users - stored globally, not per-user
+  if (!localStorage.getItem('lumbung_tani_users')) {
     const defaultUsers = [
       {
         id: 1,
@@ -77,11 +105,6 @@ export function initializeDefaultData() {
     localStorage.setItem('lumbung_tani_users', JSON.stringify(defaultUsers))
   }
 
-  // Initialize empty arrays if not exists
-  if (!storage.get('PLANTS')) storage.set('PLANTS', [])
-  if (!storage.get('MAINTENANCE')) storage.set('MAINTENANCE', [])
-  if (!storage.get('HARVESTS')) storage.set('HARVESTS', [])
-  if (!storage.get('FINANCES')) storage.set('FINANCES', [])
-  if (!storage.get('LANDS')) storage.set('LANDS', [])
-  if (!storage.get('NOTIFICATIONS')) storage.set('NOTIFICATIONS', [])
+  // Note: User-specific data (plants, finances, etc.) will be initialized 
+  // when user logs in or registers, not here
 }

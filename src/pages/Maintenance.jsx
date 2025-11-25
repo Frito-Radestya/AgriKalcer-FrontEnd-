@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useData } from '@/context/DataContext'
+import { useData } from '@/context/useData'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Input, Label, Select, Textarea } from '@/components/ui/Input'
@@ -22,7 +22,7 @@ export function Maintenance() {
   const [formData, setFormData] = useState({
     plantId: '',
     type: '',
-    date: new Date().toISOString().split('T')[0],
+    date: new Date().toLocaleDateString('en-CA'),
     description: '',
     quantity: '',
     cost: '',
@@ -77,7 +77,7 @@ export function Maintenance() {
     setFormData({
       plantId: '',
       type: '',
-      date: new Date().toISOString().split('T')[0],
+      date: new Date().toLocaleDateString('en-CA'),
       description: '',
       quantity: '',
       cost: '',
@@ -91,6 +91,7 @@ export function Maintenance() {
 
   // Group by plant
   const maintenanceByPlant = maintenance.reduce((acc, item) => {
+    if (!item.plantName) return acc
     if (!acc[item.plantName]) {
       acc[item.plantName] = []
     }
@@ -99,14 +100,14 @@ export function Maintenance() {
   }, {})
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 lg:space-y-10">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold">Perawatan & Pemeliharaan</h2>
+          <h2 className="text-3xl font-extrabold tracking-tight brand-title">Perawatan & Pemeliharaan</h2>
           <p className="text-muted-foreground">Catat aktivitas perawatan tanaman</p>
         </div>
-        <Button onClick={() => setIsModalOpen(true)} disabled={activePlants.length === 0}>
+        <Button onClick={() => setIsModalOpen(true)} disabled={activePlants.length === 0} className="brand-btn">
           <Plus className="h-4 w-4 mr-2" />
           Tambah Aktivitas
         </Button>
@@ -114,7 +115,7 @@ export function Maintenance() {
 
       {activePlants.length === 0 && (
         <Card>
-          <CardContent className="py-12 text-center">
+          <CardContent className="py-14 text-center">
             <p className="text-muted-foreground">
               Tidak ada tanaman aktif. Tambahkan tanaman terlebih dahulu.
             </p>
@@ -126,9 +127,9 @@ export function Maintenance() {
       {maintenance.length === 0 ? (
         activePlants.length > 0 && (
           <Card>
-            <CardContent className="py-12 text-center">
+            <CardContent className="py-14 text-center">
               <p className="text-muted-foreground">
-                Belum ada data perawatan. Klik tombol "Tambah Aktivitas" untuk memulai.
+                Belum ada data perawatan. Klik tombol &quot;Tambah Aktivitas&quot; untuk memulai.
               </p>
             </CardContent>
           </Card>
@@ -137,14 +138,15 @@ export function Maintenance() {
         <div className="space-y-6">
           {Object.entries(maintenanceByPlant).map(([plantName, items]) => (
             <Card key={plantName}>
-              <CardHeader>
-                <CardTitle>{plantName}</CardTitle>
+              <CardHeader className="brand-header-gradient">
+                <CardTitle className="tracking-tight">{plantName}</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-2">
                 <div className="space-y-3">
                   {items.map((item) => {
                     const type = getMaintenanceType(item.type)
                     const Icon = type?.icon || Droplets
+                    const iconColor = type?.color || 'text-blue-600'
 
                     return (
                       <div
@@ -152,7 +154,7 @@ export function Maintenance() {
                         className="flex items-start gap-4 p-4 bg-muted rounded-lg"
                       >
                         <div className={`p-2 rounded-lg bg-background`}>
-                          <Icon className={`h-5 w-5 ${type?.color}`} />
+                          <Icon className={`h-5 w-5 ${iconColor}`} />
                         </div>
                         
                         <div className="flex-1 min-w-0">

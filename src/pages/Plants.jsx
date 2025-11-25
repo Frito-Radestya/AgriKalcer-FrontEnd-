@@ -1,11 +1,13 @@
 import { useState } from 'react'
-import { useData, PLANT_TYPES } from '@/context/DataContext'
+import { useData } from '@/context/useData'
+import { PLANT_TYPES } from '@/context/plantTypes'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Input, Label, Select } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
 import { Badge } from '@/components/ui/Badge'
 import { ExportButtons } from '@/components/ExportButtons'
+import { MapPicker } from '@/components/MapPicker'
 import { formatDate, calculateDaysDifference } from '@/lib/utils'
 import { Plus, Edit, Trash2, Calendar, MapPin } from 'lucide-react'
 
@@ -16,9 +18,12 @@ export function Plants() {
   const [formData, setFormData] = useState({
     plantType: '',
     plantName: '',
-    plantDate: new Date().toISOString().split('T')[0],
-    landArea: '',
-    landName: '',
+    plantDate: new Date().toLocaleDateString('en-CA'),
+    landId: '',
+    newLandName: '',
+    newLandArea: '',
+    newLat: -7.7956,
+    newLng: 110.3695,
     seedType: '',
     seedAmount: '',
   })
@@ -41,8 +46,11 @@ export function Plants() {
       plantType: plant.plantType,
       plantName: plant.plantName,
       plantDate: plant.plantDate,
-      landArea: plant.landArea,
-      landName: plant.landName,
+      landId: plant.landId || '',
+      newLandName: '',
+      newLandArea: '',
+      newLat: plant.newLat || -7.7956,
+      newLng: plant.newLng || 110.3695,
       seedType: plant.seedType,
       seedAmount: plant.seedAmount,
     })
@@ -61,9 +69,12 @@ export function Plants() {
     setFormData({
       plantType: '',
       plantName: '',
-      plantDate: new Date().toISOString().split('T')[0],
-      landArea: '',
-      landName: '',
+      plantDate: new Date().toLocaleDateString('en-CA'),
+      landId: '',
+      newLandName: '',
+      newLandArea: '',
+      newLat: -7.7956,
+      newLng: 110.3695,
       seedType: '',
       seedAmount: '',
     })
@@ -74,16 +85,16 @@ export function Plants() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 lg:space-y-10">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold">Data Tanam</h2>
+          <h2 className="text-3xl font-extrabold tracking-tight brand-title">Data Tanam</h2>
           <p className="text-muted-foreground">Kelola data penanaman Anda</p>
         </div>
         <div className="flex gap-2">
           <ExportButtons type="plants" data={plants} />
-          <Button onClick={() => setIsModalOpen(true)}>
+          <Button onClick={() => setIsModalOpen(true)} className="brand-btn">
             <Plus className="h-4 w-4 mr-2" />
             Tambah Tanaman
           </Button>
@@ -93,14 +104,14 @@ export function Plants() {
       {/* Plants Grid */}
       {plants.length === 0 ? (
         <Card>
-          <CardContent className="py-12 text-center">
+          <CardContent className="py-14 text-center">
             <p className="text-muted-foreground">
-              Belum ada data tanaman. Klik tombol "Tambah Tanaman" untuk memulai.
+              Belum ada data tanaman. Klik tombol &quot;Tambah Tanaman&quot; untuk memulai.
             </p>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {plants.map((plant) => {
             const plantType = getPlantTypeInfo(plant.plantType)
             const daysUntilHarvest = calculateDaysDifference(
@@ -114,7 +125,7 @@ export function Plants() {
 
             return (
               <Card key={plant.id}>
-                <CardHeader>
+                <CardHeader className="brand-header-gradient">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-2">
                       <span className="text-3xl">{plantType?.icon}</span>
@@ -130,7 +141,7 @@ export function Plants() {
                     </Badge>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="pt-2 space-y-4">
                   <div className="flex items-center gap-2 text-sm">
                     <MapPin className="h-4 w-4 text-muted-foreground" />
                     <span>{plant.landName} ({plant.landArea} m²)</span>
@@ -156,7 +167,7 @@ export function Plants() {
                     )}
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Bibit:</span>
-                      <span className="font-medium">{plant.seedAmount} {plant.seedType}</span>
+                      <span className="font-medium">{plant.seedAmount || ''} {plant.seedType || ''}</span>
                     </div>
                   </div>
 
@@ -234,28 +245,55 @@ export function Plants() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="landName">Nama Lahan *</Label>
-              <Input
-                id="landName"
-                placeholder="Contoh: Sawah A"
-                value={formData.landName}
-                onChange={(e) => setFormData({ ...formData, landName: e.target.value })}
-                required
-              />
+              <Label htmlFor="landId">Lahan</Label>
+              <Select
+                id="landId"
+                value={formData.landId}
+                onChange={(e) => setFormData({ ...formData, landId: e.target.value, newLandName: '', newLandArea: '' })}
+              >
+                <option value="">Pilih Lahan</option>
+                {lands.map((land) => (
+                  <option key={land.id} value={land.id}>
+                    {land.landName} ({land.landArea} m²)
+                  </option>
+                ))}
+              </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="landArea">Luas Lahan (m²) *</Label>
+              <Label>Atau Buat Lahan Baru</Label>
               <Input
-                id="landArea"
-                type="number"
-                placeholder="1000"
-                value={formData.landArea}
-                onChange={(e) => setFormData({ ...formData, landArea: e.target.value })}
-                required
+                placeholder="Nama Lahan"
+                value={formData.newLandName}
+                onChange={(e) => setFormData({ ...formData, newLandName: e.target.value, landId: '' })}
               />
             </div>
           </div>
+
+          {formData.newLandName && (
+            <div className="space-y-2">
+              <Label htmlFor="newLandArea">Luas Lahan Baru (m²)</Label>
+              <Input
+                id="newLandArea"
+                type="number"
+                placeholder="1000"
+                value={formData.newLandArea}
+                onChange={(e) => setFormData({ ...formData, newLandArea: e.target.value })}
+                required={!!formData.newLandName}
+              />
+            </div>
+          )}
+
+          {formData.newLandName && (
+            <div className="space-y-2">
+              <Label>Lokasi Lahan (Klik pada peta)</Label>
+              <MapPicker
+                value={{ lat: formData.newLat, lng: formData.newLng }}
+                onChange={(pos) => setFormData({ ...formData, newLat: pos.lat, newLng: pos.lng })}
+                height="250px"
+              />
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">

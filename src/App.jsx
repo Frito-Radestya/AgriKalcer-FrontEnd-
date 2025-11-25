@@ -1,9 +1,11 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { AuthProvider, useAuth } from './context/AuthContext'
-import { DataProvider } from './context/DataContext'
-import { initializeDefaultData } from './lib/storage'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider } from './context/AuthContext.jsx'
+import { DataProvider } from './context/DataContext.jsx'
+import { useAuth } from './context/useAuth'
 import { Layout } from './components/Layout'
+import { Landing } from './pages/Landing'
 import { Login } from './pages/Login'
+import { Register } from './pages/Register'
 import { Dashboard } from './pages/Dashboard'
 import { Plants } from './pages/Plants'
 import { Maintenance } from './pages/Maintenance'
@@ -13,44 +15,36 @@ import { Analytics } from './pages/Analytics'
 import { Lands } from './pages/Lands'
 import { Notifications } from './pages/Notifications'
 
-// Initialize default data on first load
-initializeDefaultData()
-
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth()
-
+  
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-[#0b130f] text-[#f7f3eb]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Memuat...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#ffe457] mx-auto mb-4"></div>
+          <p className="text-[#d3c9b6] tracking-[0.35em] uppercase text-xs">Memuat</p>
         </div>
       </div>
     )
   }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />
-  }
-
-  return <Layout>{children}</Layout>
+  
+  return isAuthenticated ? children : <Navigate to="/login" replace />
 }
 
 function AppRoutes() {
-  const { isAuthenticated } = useAuth()
-
   return (
     <Routes>
-      <Route
-        path="/login"
-        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />}
-      />
+      <Route path="/" element={<Landing />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
       <Route
         path="/dashboard"
         element={
           <ProtectedRoute>
-            <Dashboard />
+            <Layout>
+              <Dashboard />
+            </Layout>
           </ProtectedRoute>
         }
       />
@@ -58,7 +52,9 @@ function AppRoutes() {
         path="/plants"
         element={
           <ProtectedRoute>
-            <Plants />
+            <Layout>
+              <Plants />
+            </Layout>
           </ProtectedRoute>
         }
       />
@@ -66,7 +62,9 @@ function AppRoutes() {
         path="/maintenance"
         element={
           <ProtectedRoute>
-            <Maintenance />
+            <Layout>
+              <Maintenance />
+            </Layout>
           </ProtectedRoute>
         }
       />
@@ -74,7 +72,9 @@ function AppRoutes() {
         path="/harvests"
         element={
           <ProtectedRoute>
-            <Harvests />
+            <Layout>
+              <Harvests />
+            </Layout>
           </ProtectedRoute>
         }
       />
@@ -82,7 +82,9 @@ function AppRoutes() {
         path="/finances"
         element={
           <ProtectedRoute>
-            <Finances />
+            <Layout>
+              <Finances />
+            </Layout>
           </ProtectedRoute>
         }
       />
@@ -90,7 +92,9 @@ function AppRoutes() {
         path="/analytics"
         element={
           <ProtectedRoute>
-            <Analytics />
+            <Layout>
+              <Analytics />
+            </Layout>
           </ProtectedRoute>
         }
       />
@@ -98,7 +102,9 @@ function AppRoutes() {
         path="/lands"
         element={
           <ProtectedRoute>
-            <Lands />
+            <Layout>
+              <Lands />
+            </Layout>
           </ProtectedRoute>
         }
       />
@@ -106,26 +112,26 @@ function AppRoutes() {
         path="/notifications"
         element={
           <ProtectedRoute>
-            <Notifications />
+            <Layout>
+              <Notifications />
+            </Layout>
           </ProtectedRoute>
         }
       />
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
 }
 
-function App() {
+export default function App() {
   return (
-    <BrowserRouter>
+    <Router>
       <AuthProvider>
         <DataProvider>
           <AppRoutes />
         </DataProvider>
       </AuthProvider>
-    </BrowserRouter>
+    </Router>
   )
 }
 
-export default App

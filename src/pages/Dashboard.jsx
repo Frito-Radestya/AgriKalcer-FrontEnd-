@@ -1,31 +1,28 @@
-import { useData } from '@/context/DataContext'
+import { useData } from '@/context/useData'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { formatCurrency, formatDate, calculateDaysDifference } from '@/lib/utils'
-import { getOverdueReminders } from '@/lib/reminderSystem'
-import {
-  Sprout,
-  Calendar,
-  TrendingUp,
-  DollarSign,
-  MapPin,
-  Droplets,
-  AlertCircle,
-  AlertTriangle,
-} from 'lucide-react'
+import { Sprout, Calendar, TrendingUp, DollarSign, MapPin, AlertCircle, Bell } from 'lucide-react'
 
 export function Dashboard() {
   const { plants, harvests, finances, lands, notifications } = useData()
 
-  const activePlants = plants.filter(p => p.status === 'active')
-  const totalHarvests = harvests.length
-  const totalLands = lands.length
+  // Ensure all data are arrays (safety check)
+  const plantsArray = Array.isArray(plants) ? plants : []
+  const harvestsArray = Array.isArray(harvests) ? harvests : []
+  const financesArray = Array.isArray(finances) ? finances : []
+  const landsArray = Array.isArray(lands) ? lands : []
+  const notificationsArray = Array.isArray(notifications) ? notifications : []
+
+  const activePlants = plantsArray.filter(p => p.status === 'active')
+  const totalHarvests = harvestsArray.length
+  const totalLands = landsArray.length
 
   // Calculate financial summary
-  const income = finances
+  const income = financesArray
     .filter(f => f.type === 'income')
     .reduce((sum, f) => sum + f.amount, 0)
-  const expenses = finances
+  const expenses = financesArray
     .filter(f => f.type === 'expense')
     .reduce((sum, f) => sum + f.amount, 0)
   const profit = income - expenses
@@ -39,59 +36,57 @@ export function Dashboard() {
     return daysUntilHarvest <= 7 && daysUntilHarvest >= 0
   })
 
-  // Overdue reminders
-  const overdueReminders = getOverdueReminders(notifications)
-
-  // Recent activities
-  const recentNotifications = notifications.slice(0, 5)
+  // Recent notifications
+  const recentNotifications = notificationsArray
+    .filter(n => !n.read)
+    .slice(0, 5)
 
   const stats = [
     {
       title: 'Tanaman Aktif',
       value: activePlants.length,
       icon: Sprout,
-      color: 'text-green-600',
-      bgColor: 'bg-green-100 dark:bg-green-900',
     },
     {
       title: 'Total Panen',
       value: totalHarvests,
       icon: Calendar,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-100 dark:bg-blue-900',
     },
     {
       title: 'Laba Bersih',
       value: formatCurrency(profit),
       icon: DollarSign,
-      color: 'text-yellow-600',
-      bgColor: 'bg-yellow-100 dark:bg-yellow-900',
     },
     {
       title: 'Lahan Terdaftar',
       value: totalLands,
       icon: MapPin,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-100 dark:bg-purple-900',
     },
   ]
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 lg:space-y-10">
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat) => {
           const Icon = stat.icon
           return (
-            <Card key={stat.title}>
+            <Card
+              key={stat.title}
+              className="hover:-translate-y-1 transition-all duration-300"
+            >
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">{stat.title}</p>
-                    <p className="text-2xl font-bold mt-1">{stat.value}</p>
+                    <p className="text-xs uppercase tracking-[0.35em] text-[#b8af9f]">
+                      {stat.title}
+                    </p>
+                    <p className="text-2xl font-semibold mt-6 text-white">
+                      {stat.value}
+                    </p>
                   </div>
-                  <div className={`${stat.bgColor} p-3 rounded-lg`}>
-                    <Icon className={`h-6 w-6 ${stat.color}`} />
+                  <div className="rounded-2xl bg-white/10 p-4 text-[#ffe457] shadow-inner shadow-black/30">
+                    <Icon className="h-7 w-7" />
                   </div>
                 </div>
               </CardContent>
@@ -100,30 +95,32 @@ export function Dashboard() {
         })}
       </div>
 
-      {/* Overdue Reminders Alert */}
-      {overdueReminders.length > 0 && (
-        <Card className="border-red-500 border-2 bg-red-50 dark:bg-red-950">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-red-600">
-              <AlertTriangle className="h-5 w-5" />
-              Peringatan: {overdueReminders.length} Pengingat Jatuh Tempo!
+      {/* Unread Notifications Alert */}
+      {recentNotifications.length > 0 && (
+        <Card className="brand-header-gradient border-white/15">
+          <CardHeader className="border-0">
+            <CardTitle className="flex items-center gap-2 text-white">
+              <Bell className="h-5 w-5 text-[#ffe457]" />
+              {recentNotifications.length} Notifikasi Baru
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {overdueReminders.slice(0, 3).map((reminder) => (
+          <CardContent className="pt-0">
+            <div className="max-h-48 overflow-y-auto space-y-2">
+              {recentNotifications.slice(0, 10).map((notification) => (
                 <div
-                  key={reminder.id}
-                  className="flex items-center gap-2 p-2 bg-white dark:bg-gray-800 rounded"
+                  key={notification.id}
+                  className="flex items-center gap-2 p-2 rounded-xl border border-white/5 bg-white/5"
                 >
-                  <AlertCircle className="h-4 w-4 text-red-600" />
-                  <span className="text-sm font-medium">{reminder.title}</span>
-                  <span className="text-xs text-muted-foreground">- {reminder.plantName}</span>
+                  <AlertCircle className="h-4 w-4 text-[#ffe457]" />
+                  <span className="text-sm font-medium text-white">{notification.title}</span>
+                  <span className="text-xs text-[#b8af9f]">
+                    {notification.createdAt ? new Date(notification.createdAt).toLocaleDateString() : 'Tanggal tidak tersedia'}
+                  </span>
                 </div>
               ))}
-              {overdueReminders.length > 3 && (
+              {recentNotifications.length > 10 && (
                 <p className="text-sm text-muted-foreground text-center pt-2">
-                  +{overdueReminders.length - 3} pengingat lainnya
+                  +{recentNotifications.length - 10} notifikasi lainnya
                 </p>
               )}
             </div>
@@ -134,39 +131,42 @@ export function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Upcoming Harvests */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
+          <CardHeader className="brand-header-gradient border-0">
+            <CardTitle className="flex items-center gap-2 text-white">
+              <Calendar className="h-5 w-5 text-[#ffe457]" />
               Panen Mendatang (7 Hari)
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-0">
             {upcomingHarvests.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">
+              <p className="text-[#b8af9f] text-center py-8">
                 Tidak ada panen dalam 7 hari ke depan
               </p>
             ) : (
-              <div className="space-y-3">
+              <div className="max-h-64 overflow-y-auto space-y-3">
                 {upcomingHarvests.map((plant) => {
                   const daysLeft = calculateDaysDifference(
                     new Date(),
                     new Date(plant.estimatedHarvestDate)
                   )
                   return (
-                    <div
-                      key={plant.id}
-                      className="flex items-center justify-between p-3 bg-muted rounded-lg"
-                    >
-                      <div>
-                        <p className="font-medium">{plant.plantName}</p>
-                        <p className="text-sm text-muted-foreground">
-                          Lahan: {plant.landName}
-                        </p>
-                      </div>
-                      <Badge variant={daysLeft <= 3 ? 'warning' : 'info'}>
-                        {daysLeft} hari lagi
-                      </Badge>
+                  <div
+                    key={plant.id}
+                    className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/10 hover:border-white/30 transition"
+                  >
+                    <div>
+                      <p className="font-semibold text-white">{plant.plantName}</p>
+                      <p className="text-sm text-[#b8af9f]">
+                        Lahan: {plant.landName}
+                      </p>
                     </div>
+                    <Badge
+                      variant={daysLeft <= 3 ? 'warning' : 'info'}
+                      className="font-semibold"
+                    >
+                      {daysLeft} hari lagi
+                    </Badge>
+                  </div>
                   )
                 })}
               </div>
@@ -176,31 +176,33 @@ export function Dashboard() {
 
         {/* Active Plants */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Sprout className="h-5 w-5" />
+          <CardHeader className="brand-header-gradient border-0">
+            <CardTitle className="flex items-center gap-2 text-white">
+              <Sprout className="h-5 w-5 text-[#ffe457]" />
               Tanaman Aktif
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-0">
             {activePlants.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">
+              <p className="text-[#b8af9f] text-center py-8">
                 Belum ada tanaman aktif
               </p>
             ) : (
-              <div className="space-y-3">
-                {activePlants.slice(0, 5).map((plant) => (
+              <div className="max-h-64 overflow-y-auto space-y-3">
+                {activePlants.slice(0, 10).map((plant) => (
                   <div
                     key={plant.id}
-                    className="flex items-center justify-between p-3 bg-muted rounded-lg"
+                    className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/10 hover:border-white/30 transition"
                   >
                     <div>
-                      <p className="font-medium">{plant.plantName}</p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="font-semibold text-white">{plant.plantName}</p>
+                      <p className="text-sm text-[#b8af9f]">
                         Ditanam: {formatDate(plant.plantDate)}
                       </p>
                     </div>
-                    <Badge variant="success">Aktif</Badge>
+                    <Badge className="font-semibold" variant="success">
+                      Aktif
+                    </Badge>
                   </div>
                 ))}
               </div>
@@ -208,70 +210,35 @@ export function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Financial Summary */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
+        {/* Financial Summary - Full Width */}
+        <Card className="lg:col-span-2">
+          <CardHeader className="brand-header-gradient border-0">
+            <CardTitle className="flex items-center gap-2 text-white">
+              <TrendingUp className="h-5 w-5 text-[#ffe457]" />
               Ringkasan Keuangan
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Pendapatan</span>
-                <span className="font-semibold text-green-600">
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+                <span className="text-sm uppercase tracking-[0.25em] text-[#b8af9f]">Pendapatan</span>
+                <span className="text-2xl font-semibold text-[#d9f87d]">
                   {formatCurrency(income)}
                 </span>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Pengeluaran</span>
-                <span className="font-semibold text-red-600">
+              <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+                <span className="text-sm uppercase tracking-[0.25em] text-[#b8af9f]">Pengeluaran</span>
+                <span className="text-2xl font-semibold text-[#f18b8b]">
                   {formatCurrency(expenses)}
                 </span>
               </div>
-              <div className="border-t pt-4">
-                <div className="flex justify-between items-center">
-                  <span className="font-medium">Laba Bersih</span>
-                  <span className={`font-bold text-lg ${profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {formatCurrency(profit)}
-                  </span>
-                </div>
+              <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+                <span className="text-sm uppercase tracking-[0.25em] text-[#b8af9f]">Laba Bersih</span>
+                <span className={`text-2xl font-semibold ${profit >= 0 ? 'text-[#d9f87d]' : 'text-[#f18b8b]'}`}>
+                  {formatCurrency(profit)}
+                </span>
               </div>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Recent Notifications */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5" />
-              Notifikasi Terbaru
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {recentNotifications.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">
-                Tidak ada notifikasi
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {recentNotifications.map((notif) => (
-                  <div
-                    key={notif.id}
-                    className={`p-3 rounded-lg ${
-                      notif.read ? 'bg-muted' : 'bg-primary/10'
-                    }`}
-                  >
-                    <p className="font-medium text-sm">{notif.title}</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {notif.message}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
           </CardContent>
         </Card>
       </div>

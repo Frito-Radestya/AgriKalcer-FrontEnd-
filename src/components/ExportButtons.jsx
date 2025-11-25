@@ -1,5 +1,5 @@
 import { Button } from './ui/Button'
-import { Download, FileText, FileSpreadsheet } from 'lucide-react'
+import { FileText, FileSpreadsheet } from 'lucide-react'
 import {
   exportPlantsToPDF,
   exportPlantsToExcel,

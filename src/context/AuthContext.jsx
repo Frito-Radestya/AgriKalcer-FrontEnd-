@@ -1,43 +1,84 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { storage } from '@/lib/storage'
-
-const AuthContext = createContext(null)
+import { AuthContext } from './authContext'
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4001'
 
   useEffect(() => {
     const currentUser = storage.get('USER')
-    if (currentUser) {
-      setUser(currentUser)
-    }
+    const token = storage.get('TOKEN')
+    if (currentUser && token) setUser(currentUser)
     setLoading(false)
   }, [])
 
-  const login = (email, password) => {
-    const users = JSON.parse(localStorage.getItem('lumbung_tani_users') || '[]')
-    const foundUser = users.find(u => u.email === email && u.password === password)
-    
-    if (foundUser) {
-      const userWithoutPassword = { ...foundUser }
-      delete userWithoutPassword.password
-      setUser(userWithoutPassword)
-      storage.set('USER', userWithoutPassword)
-      return { success: true, user: userWithoutPassword }
+  const login = async (email, password) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        return { success: false, error: err.message || 'Email atau password salah' }
+      }
+      const data = await res.json()
+      storage.set('TOKEN', data.token)
+      storage.set('USER', data.user)
+      setUser(data.user)
+      return { success: true, user: data.user }
+    } catch (e) {
+      return { success: false, error: 'Gagal terhubung ke server' }
     }
-    
-    return { success: false, error: 'Email atau password salah' }
   }
 
   const logout = () => {
     setUser(null)
     storage.remove('USER')
+    storage.remove('TOKEN')
+  }
+
+  const register = async (userData) => {
+    try {
+      if (!userData.name || !userData.email || !userData.password) {
+        return { success: false, error: 'Semua field harus diisi' }
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(userData.email)) {
+        return { success: false, error: 'Format email tidak valid' }
+      }
+
+      if (userData.password.length < 6) {
+        return { success: false, error: 'Password minimal 6 karakter' }
+      }
+      const res = await fetch(`${API_BASE}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: userData.name, email: userData.email, password: userData.password }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        return { success: false, error: err.message || 'Gagal mendaftar' }
+      }
+      const data = await res.json()
+      storage.set('TOKEN', data.token)
+      storage.set('USER', data.user)
+      setUser(data.user)
+      return { success: true, user: data.user }
+    } catch (error) {
+      console.error('Registration error:', error)
+      return { success: false, error: 'Terjadi kesalahan saat mendaftar. Silakan coba lagi nanti.' }
+    }
   }
 
   const value = {
     user,
     login,
+    register,
     logout,
     loading,
     isAuthenticated: !!user,
@@ -46,10 +87,4 @@ export function AuthProvider({ children }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
-export function useAuth() {
-  const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider')
-  }
-  return context
-}
+// useAuth moved to '@/context/useAuth'

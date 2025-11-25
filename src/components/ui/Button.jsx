@@ -11,7 +11,7 @@ export function Button({
   const baseStyles = 'inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50'
   
   const variants = {
-    primary: 'bg-primary text-primary-foreground hover:bg-primary/90',
+    primary: 'bg-[#ffe457] text-[#1b2c1f] hover:bg-[#ffd12f]',
     secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
     destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
     outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',

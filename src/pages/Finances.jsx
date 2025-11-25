@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { useData } from '@/context/DataContext'
+import { useData } from '@/context/useData'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Input, Label, Select, Textarea } from '@/components/ui/Input'
+import { Input, Label, Select } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
 import { Badge } from '@/components/ui/Badge'
 import { ExportButtons } from '@/components/ExportButtons'
@@ -18,7 +18,7 @@ export function Finances() {
     category: '',
     amount: '',
     description: '',
-    date: new Date().toISOString().split('T')[0],
+    date: new Date().toLocaleDateString('en-CA'),
     plantId: '',
   })
 
@@ -67,7 +67,7 @@ export function Finances() {
       category: '',
       amount: '',
       description: '',
-      date: new Date().toISOString().split('T')[0],
+      date: new Date().toLocaleDateString('en-CA'),
       plantId: '',
     })
   }
@@ -83,6 +83,7 @@ export function Finances() {
 
   // Group by month
   const financesByMonth = finances.reduce((acc, finance) => {
+    if (!finance.date) return acc
     const month = new Date(finance.date).toLocaleDateString('id-ID', { year: 'numeric', month: 'long' })
     if (!acc[month]) {
       acc[month] = []
@@ -92,16 +93,16 @@ export function Finances() {
   }, {})
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 lg:space-y-10">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold">Keuangan</h2>
+          <h2 className="text-3xl font-extrabold tracking-tight brand-title">Keuangan</h2>
           <p className="text-muted-foreground">Kelola pemasukan dan pengeluaran</p>
         </div>
         <div className="flex gap-2">
           <ExportButtons type="finances" data={finances} />
-          <Button onClick={() => setIsModalOpen(true)}>
+          <Button onClick={() => setIsModalOpen(true)} className="brand-btn">
             <Plus className="h-4 w-4 mr-2" />
             Tambah Transaksi
           </Button>
@@ -109,7 +110,7 @@ export function Finances() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -162,9 +163,9 @@ export function Finances() {
       {/* Transactions List */}
       {finances.length === 0 ? (
         <Card>
-          <CardContent className="py-12 text-center">
+          <CardContent className="py-14 text-center">
             <p className="text-muted-foreground">
-              Belum ada data keuangan. Klik tombol "Tambah Transaksi" untuk memulai.
+              Belum ada data keuangan. Klik tombol &quot;Tambah Transaksi&quot; untuk memulai.
             </p>
           </CardContent>
         </Card>
@@ -172,10 +173,10 @@ export function Finances() {
         <div className="space-y-6">
           {Object.entries(financesByMonth).reverse().map(([month, items]) => (
             <Card key={month}>
-              <CardHeader>
-                <CardTitle>{month}</CardTitle>
+              <CardHeader className="brand-header-gradient">
+                <CardTitle className="tracking-tight">{month}</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-2">
                 <div className="space-y-3">
                   {items.map((finance) => (
                     <div
