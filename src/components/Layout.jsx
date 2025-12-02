@@ -4,6 +4,9 @@ import { useAuth } from '@/context/useAuth'
 import { useData } from '@/context/useData'
 import { Button } from './ui/Button'
 import { Badge } from './ui/Badge'
+import { WeatherWidget } from './WeatherWidget'
+import { ProfileModal } from './ProfileModal'
+import { HelpModal } from './HelpModal'
 import {
   LayoutDashboard,
   Sprout,
@@ -17,11 +20,11 @@ import {
   X,
   User,
   DollarSign,
-  Search,
-  Settings,
   HelpCircle,
   ChevronDown,
+  Bot,
 } from 'lucide-react'
+import LogoWeb from '../../assets/iconlogo1.png'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -31,12 +34,15 @@ const navigation = [
   { name: 'Keuangan', href: '/finances', icon: DollarSign },
   { name: 'Analisis', href: '/analytics', icon: TrendingUp },
   { name: 'Lahan', href: '/lands', icon: MapPin },
+  { name: 'AI Assistant', href: '/ai-chat', icon: Bot },
   { name: 'Notifikasi', href: '/notifications', icon: Bell },
 ]
 
 export function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
+  const [profileModalOpen, setProfileModalOpen] = useState(false)
+  const [helpModalOpen, setHelpModalOpen] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
   const { user, logout } = useAuth()
@@ -82,9 +88,9 @@ export function Layout({ children }) {
             {/* Logo */}
             <div className="flex items-center justify-between p-6 border-b border-white/10">
               <Link to="/dashboard" className="flex items-center gap-3 group">
-                <div className="bg-gradient-to-br from-[#ffe457] to-[#f8c06b] text-[#1b2c1f] p-2.5 rounded-2xl shadow-[0_20px_45px_rgba(0,0,0,0.35)] group-hover:scale-105 transition-transform">
-                  <Sprout className="h-6 w-6" />
-                </div>
+                <div className="flex items-center justify-center w-16 h-16 rounded-full bg-white/10 backdrop-blur-sm overflow-hidden border-2 border-green-500">
+                <img src={LogoWeb} alt="Logo" className="h-14 w-14 object-cover rounded-full scale-110" />
+              </div>
                 <div>
                   <p className="text-[11px] uppercase tracking-[0.3em] text-[#9db892]">Agri Kalcer</p>
                   <p className="text-lg font-semibold text-white">Lumbung Tani</p>
@@ -107,7 +113,7 @@ export function Layout({ children }) {
                   Menu Utama
                 </h3>
                 <div className="space-y-1">
-                  {navigation.slice(0, 6).map((item) => {
+                  {navigation.slice(0, 7).map((item) => {
                     const isActive = location.pathname === item.href
                     const Icon = item.icon
                     const showBadge = item.name === 'Notifikasi' && unreadCount > 0
@@ -145,7 +151,7 @@ export function Layout({ children }) {
                   Lainnya
                 </h3>
                 <div className="space-y-1">
-                  {navigation.slice(6).map((item) => {
+                  {navigation.slice(7).map((item) => {
                     const isActive = location.pathname === item.href
                     const Icon = item.icon
                     const showBadge = item.name === 'Notifikasi' && unreadCount > 0
@@ -228,16 +234,9 @@ export function Layout({ children }) {
               </div>
 
               <div className="flex items-center gap-3">
-                {/* Search */}
-                <div className="hidden md:flex items-center rounded-full border border-white/15 bg-white/5 px-3 py-1.5 gap-2 w-64">
-                  <Search className="h-4 w-4 text-white/60" />
-                  <input
-                    type="text"
-                    placeholder="Cari modul atau tugas..."
-                    className="bg-transparent border-0 outline-none text-sm text-white placeholder:text-white/50 w-full"
-                  />
-                </div>
-
+                {/* Weather Widget */}
+                <WeatherWidget />
+                
                 {/* Notifications */}
                 <Button
                   variant="ghost"
@@ -268,25 +267,22 @@ export function Layout({ children }) {
 
                   {profileOpen && (
                     <div className="absolute right-0 mt-2 w-52 rounded-2xl border border-white/10 bg-[#0f1913] text-white shadow-2xl shadow-black/40 py-1 z-50">
-                      <Link
-                        to="/profile"
-                        className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-white/5"
-                        onClick={() => setProfileOpen(false)}
+                      <button
+                        className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-white/5 w-full text-left"
+                        onClick={() => {
+                          setProfileOpen(false)
+                          setProfileModalOpen(true)
+                        }}
                       >
                         <User className="h-4 w-4" />
                         Profil
-                      </Link>
-                      <Link
-                        to="/settings"
-                        className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-white/5"
-                        onClick={() => setProfileOpen(false)}
-                      >
-                        <Settings className="h-4 w-4" />
-                        Pengaturan
-                      </Link>
+                      </button>
                       <button
                         className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-white/5 w-full text-left"
-                        onClick={() => setProfileOpen(false)}
+                        onClick={() => {
+                          setProfileOpen(false)
+                          setHelpModalOpen(true)
+                        }}
                       >
                         <HelpCircle className="h-4 w-4" />
                         Bantuan
@@ -314,6 +310,16 @@ export function Layout({ children }) {
           </main>
         </div>
       </div>
+      
+      {/* Modals */}
+      <ProfileModal 
+        isOpen={profileModalOpen} 
+        onClose={() => setProfileModalOpen(false)} 
+      />
+      <HelpModal 
+        isOpen={helpModalOpen} 
+        onClose={() => setHelpModalOpen(false)} 
+      />
     </div>
   )
 }

@@ -182,13 +182,22 @@ export function DataProvider({ children }) {
         })
         .then((response) => {
           const data = Array.isArray(response) ? response : (response.data || [])
-          const mapped = data.map((l) => ({
+          const mapped = data.map((l) => {
+          console.log('🔍 Debug land from API:', l);
+          const result = {
             id: l.id,
             landName: l.name,
             landArea: l.area_size ?? '',
             location: l.location ?? '',
+            latitude: l.latitude,
+            longitude: l.longitude,
+            soilType: l.soil_type,
+            notes: l.notes,
             createdAt: l.created_at,
-          }))
+          };
+          console.log('🔍 Debug mapped land:', result);
+          return result;
+        })
           setLands(mapped)
         })
         .catch(() => {
@@ -196,14 +205,14 @@ export function DataProvider({ children }) {
         })
 
       } else {
-      // Not authenticated - set empty arrays
-      setMaintenance([])
-      setHarvests([])
-      setFinances([])
-      setNotifications([])
-      setLands([])
-      setPlants([])
-    }
+        // Not authenticated - set empty arrays
+        setMaintenance([])
+        setHarvests([])
+        setFinances([])
+        setNotifications([])
+        setLands([])
+        setPlants([])
+      }
 
     // Listen for storage changes to reload data when user logs in/out
     const handleStorageChange = () => {
@@ -315,13 +324,17 @@ export function DataProvider({ children }) {
       ? new Date(created.estimated_harvest_date)
       : addDays(plantDate, resolvedType?.harvestDays ?? 60)
     
+    // Use the data we have instead of relying on backend response
+    const resolvedLandName = plant.newLandName || (lands.find(l => l.id === landIdFromName)?.name || lands.find(l => l.id === landIdFromName)?.landName) || ''
+    
     const mapped = {
       id: created.id,
       plantType: plantTypeId,
-      plantName: created.name,
+      plantName: plant.plantName,
       plantDate,
-      landArea: created.land?.area_size ?? '',
-      landName: created.land?.name ?? '',
+      landId: created.land_id,
+      landName: resolvedLandName,
+      landArea: lands.find(l => l.id === landIdFromName)?.area_size || lands.find(l => l.id === landIdFromName)?.landArea || '',
       seedType: plant.seedType || '',
       seedAmount: plant.seedAmount || '',
       status: created.status || 'active',
@@ -344,13 +357,39 @@ export function DataProvider({ children }) {
     if (!token) {
       throw new Error('Authentication required')
     }
+    // Find plant_type_id by name (PLANT_TYPES name -> plant_types.name)
+    const plantTypeFromFrontend = PLANT_TYPES.find(p => p.id === updates.plantType)
+    let plantTypeIdFromName = null
+    if (plantTypeFromFrontend) {
+      try {
+        const resTypes = await fetch(`${API_BASE}/api/plant-types?name=${encodeURIComponent(plantTypeFromFrontend.name)}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (resTypes.ok) {
+          const types = await resTypes.json()
+          if (Array.isArray(types) && types.length) {
+            plantTypeIdFromName = types[0].id
+          }
+        }
+      } catch (_) {
+        const resAll = await fetch(`${API_BASE}/api/plant-types`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (resAll.ok) {
+          const all = await resAll.json()
+          const found = Array.isArray(all) ? all.find(t => t.name === plantTypeFromFrontend.name) : null
+          if (found) plantTypeIdFromName = found.id
+        }
+      }
+    }
+
     const body = {
       name: updates.plantName,
       planting_date: updates.plantDate,
       status: updates.status,
       notes: [updates.seedAmount, updates.seedType].filter(Boolean).join(' '),
-      land_id: null,
-      plant_type_id: null,
+      land_id: updates.landId || null,
+      plant_type_id: plantTypeIdFromName,
     }
     const res = await fetch(`${API_BASE}/api/plants/${id}`, {
       method: 'PUT',
@@ -752,11 +791,23 @@ export function DataProvider({ children }) {
     const res = await fetch(`${API_BASE}/api/lands/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ name: updates.landName, location: updates.location, area_size: updates.landArea }),
+      body: JSON.stringify({ name: updates.landName || updates.name, location: updates.location, area_size: updates.landArea || updates.area_size, latitude: updates.latitude, longitude: updates.longitude, notes: updates.notes }),
     })
     if (!res.ok) throw new Error('Gagal memperbarui lahan')
     const updatedLand = await res.json()
-    const mapped = { id: updatedLand.id, landName: updatedLand.name, landArea: updatedLand.area_size ?? '', location: updatedLand.location ?? '', createdAt: updatedLand.created_at }
+    const mapped = { 
+      id: updatedLand.id, 
+      landName: updatedLand.name, 
+      name: updatedLand.name,
+      landArea: updatedLand.area_size ?? '', 
+      area_size: updatedLand.area_size ?? '',
+      location: updatedLand.location ?? '', 
+      latitude: updatedLand.latitude,
+      longitude: updatedLand.longitude,
+      soilType: updatedLand.soil_type,
+      notes: updatedLand.notes,
+      createdAt: updatedLand.created_at 
+    }
     const updatedArr = lands.map(l => l.id === id ? mapped : l)
     setLands(updatedArr)
   }
@@ -814,31 +865,46 @@ export function DataProvider({ children }) {
 
   const markNotificationAsRead = async (id) => {
     const token = storage.get('TOKEN')
+    console.log('🔔 markNotificationAsRead called for ID:', id)
+    console.log('🔔 Token exists:', !!token)
+    
     if (!token) {
       throw new Error('Authentication required')
     }
 
     try {
+      console.log('🔄 Making API call to:', `${API_BASE}/api/notifications/${id}`)
       const res = await fetch(`${API_BASE}/api/notifications/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ read: true }),
       })
-      if (!res.ok) throw new Error('Gagal memperbarui notifikasi')
+      console.log('🔄 Response status:', res.status)
+      
+      if (!res.ok) {
+        const errorText = await res.text()
+        console.error('❌ API Error:', errorText)
+        throw new Error('Gagal memperbarui notifikasi')
+      }
+      
       const updatedServer = await res.json()
+      console.log('✅ API Response:', updatedServer)
       
       // Merge with existing notification to preserve createdAt if missing
       const existingNotification = notifications.find(n => n.id === id)
       const mergedNotification = {
         ...existingNotification,
         ...updatedServer,
+        read: true, // Force read to true after successful API call
         createdAt: updatedServer.createdAt || existingNotification?.createdAt || updatedServer.created_at
       }
       
+      console.log('🔄 Updating local state...')
       const updatedArr = notifications.map(n => n.id === id ? mergedNotification : n)
       setNotifications(updatedArr)
+      console.log('✅ Local state updated')
     } catch (e) {
-      console.error('Error updating notification:', e)
+      console.error('❌ Error in markNotificationAsRead:', e)
       throw e
     }
   }

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Link } from 'react-router-dom'
 import {
   Activity,
@@ -24,7 +25,14 @@ import {
 import { Button } from '@/components/ui/Button'
 import { ImageCarousel } from '@/components/ImageCarousel'
 import { BackgroundCarousel } from '@/components/BackgroundCarousel'
-import LogoWeb from '../../assets/Logo WEB.png'
+import Pertanian1 from '../../assets/Pertanian1.jpg'
+import Pertanian2 from '../../assets/Pertanian2.jpg'
+import Pertanian3 from '../../assets/Pertanian3.jpg'
+import Pertanian4 from '../../assets/Pertanian4.jpg'
+import Pertanian5 from '../../assets/Pertanian5.jpg'
+import Pertanian6 from '../../assets/Pertanian6.jpg'
+import VideoLoading from '../../assets/VideoTani.mp4'
+import LogoWeb from '../../assets/iconlogo1.png'
 
 const heroStats = [
   { value: '240+', label: 'Hektar termonitor', detail: '38 blok produksi aktif' },
@@ -33,10 +41,12 @@ const heroStats = [
 ]
 
 const backgroundImages = [
-  'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=2000&q=80',
-  'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=2000&q=80',
-  'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=2000&q=80',
-  'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=2000&q=80',
+  Pertanian1,
+  Pertanian2,
+  Pertanian3,
+  Pertanian4,
+  Pertanian5,
+  Pertanian6,
 ]
 
 const strategicPillars = [
@@ -150,15 +160,61 @@ const testimonials = [
 
 const gallery = [
   'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=900&q=80',
-  'https://images.unsplash.com/photo-1506804886640-20a44772c540?auto=format&fit=crop&w=900&q=80',
-  'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=900&q=80',
+  Pertanian4,
+  Pertanian5,
   'https://images.unsplash.com/photo-1492496913980-501348b61469?auto=format&fit=crop&w=900&q=80',
   'https://images.unsplash.com/photo-1582515073490-39981397c445?auto=format&fit=crop&w=900&q=80',
   'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=900&q=80',
 ]
 
 export function Landing() {
+  const navigate = useNavigate()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [showLoading, setShowLoading] = useState(false)
+  const [navigateTo, setNavigateTo] = useState(null)
+
+  const handleLoginClick = (destination) => {
+    // Reset state untuk memastikan video muncul setiap kali
+    setShowLoading(false)
+    setNavigateTo(null)
+    
+    // Small delay untuk reset state
+    setTimeout(() => {
+      setShowLoading(true)
+      setNavigateTo(destination)
+      
+      // Fade in video setelah muncul
+      setTimeout(() => {
+        const video = document.querySelector('video')
+        if (video) {
+          video.style.opacity = '0'
+          video.style.transition = 'opacity 0.3s ease-in'
+          setTimeout(() => {
+            video.style.opacity = '1'
+          }, 50)
+        }
+      }, 100)
+    }, 50)
+  }
+
+  const handleVideoEnd = () => {
+    if (navigateTo) {
+      // Fade out video lalu navigasi
+      const video = document.querySelector('video')
+      if (video) {
+        video.style.transition = 'opacity 0.3s ease-out'
+        video.style.opacity = '0'
+        
+        // Navigasi setelah fade out
+        setTimeout(() => {
+          navigate(navigateTo, { replace: true })
+        }, 300)
+      } else {
+        // Fallback jika video tidak ditemukan
+        navigate(navigateTo, { replace: true })
+      }
+    }
+  }
 
   const scrollToSection = (sectionId) => {
     const element = document.getElementById(sectionId)
@@ -169,12 +225,15 @@ export function Landing() {
   }
 
   return (
+    <>
     <div className="bg-[#0b130f] text-[#f7f3eb] min-h-screen">
       <nav className="fixed top-0 w-full z-50 border-b border-[#1c281f] bg-[#0b130f]/90 backdrop-blur-md">
         <div className="mx-auto max-w-6xl px-6">
           <div className="flex items-center justify-between h-20">
             <div className="flex items-center gap-3">
-              <img src={LogoWeb} alt="Logo" className="h-12 w-12 object-contain" />
+              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-white/10 backdrop-blur-sm overflow-hidden border-2 border-green-500">
+                <img src={LogoWeb} alt="Logo" className="h-14 w-14 object-cover rounded-full scale-110" />
+              </div>
               <div>
                 <p className="text-[11px] uppercase tracking-[0.3em] text-[#9db892]">Agri Kalcer</p>
                 <p className="text-xl font-semibold text-white">Lumbung Tani Platform</p>
@@ -211,11 +270,9 @@ export function Landing() {
               >
                 Kontak
               </button>
-              <Link to="/login">
-                <Button className="bg-[#ffe457] text-[#1b2c1f] hover:bg-[#ffd12f] px-5">
-                  Masuk
-                </Button>
-              </Link>
+              <Button onClick={() => handleLoginClick('/login')} className="bg-[#ffe457] text-[#1b2c1f] hover:bg-[#ffd12f] px-5">
+                Masuk
+              </Button>
             </div>
             <button
               className="md:hidden text-white"
@@ -226,8 +283,9 @@ export function Landing() {
             </button>
           </div>
         </div>
-        {mobileMenuOpen && (
-          <div className="md:hidden border-t border-[#1c281f] bg-[#0f1913] px-6 py-4 space-y-3 text-sm">
+      </nav>
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t border-[#1c281f] bg-[#0f1913] px-6 py-4 space-y-3 text-sm">
             {[
               { label: 'Overview', href: 'home' },
               { label: 'Solusi', href: 'solusi' },
@@ -243,12 +301,9 @@ export function Landing() {
                 {item.label}
               </button>
             ))}
-            <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
-              <Button className="w-full bg-[#ffe457] text-[#1b2c1f] hover:bg-[#ffd12f]">Masuk</Button>
-            </Link>
+            <Button onClick={() => {handleLoginClick('/login'); setMobileMenuOpen(false)}} className="w-full bg-[#ffe457] text-[#1b2c1f] hover:bg-[#ffd12f]">Masuk</Button>
           </div>
         )}
-      </nav>
 
       <main className="pt-20">
         <section id="home" className="relative min-h-[480px] overflow-hidden">
@@ -269,19 +324,12 @@ export function Landing() {
                   pelaksanaan lapangan, sampai insight finansial dalam satu kanvas yang elegan.
                 </p>
                 <div className="mt-10 flex flex-col sm:flex-row gap-4">
-                  <Link to="/register">
-                    <Button className="w-full sm:w-auto bg-[#ffe457] text-[#1b2c1f] hover:bg-[#ffd12f] px-8 py-6 text-lg rounded-full font-semibold">
-                      Jadwalkan Demo
-                    </Button>
-                  </Link>
-                  <Link to="/dashboard">
-                    <Button
-                      variant="outline"
-                      className="w-full sm:w-auto border-white/30 text-white hover:bg-white/10 px-8 py-6 text-lg rounded-full font-semibold"
-                    >
-                      Jelajahi Dashboard
-                    </Button>
-                  </Link>
+                  <Button onClick={() => handleLoginClick('/register')} className="w-full sm:w-auto bg-[#ffe457] text-[#1b2c1f] hover:bg-[#ffd12f] px-8 py-6 text-lg rounded-full font-semibold">
+                    Jadwalkan Demo
+                  </Button>
+                  <Button onClick={() => handleLoginClick('/login')} variant="outline" className="w-full sm:w-auto border-white/30 text-white hover:bg-white/10 px-8 py-6 text-lg rounded-full font-semibold">
+                    Jelajahi Dashboard
+                  </Button>
                 </div>
                 <div className="mt-12 grid gap-6 sm:grid-cols-3">
                   {heroStats.map((stat) => (
@@ -595,7 +643,9 @@ export function Landing() {
         <div className="max-w-6xl mx-auto px-6 py-12 grid gap-8 md:grid-cols-4">
           <div>
             <div className="flex items-center gap-3">
-              <img src={LogoWeb} alt="Logo" className="h-12 w-12 object-contain" />
+              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-white/10 backdrop-blur-sm overflow-hidden border-2 border-green-500">
+                <img src={LogoWeb} alt="Logo" className="h-14 w-14 object-cover rounded-full scale-110" />
+              </div>
               <div>
                 <p className="text-[11px] uppercase tracking-[0.3em] text-[#9db892]">Agri Kalcer</p>
                 <p className="text-lg text-white font-semibold">Lumbung Tani</p>
@@ -643,11 +693,9 @@ export function Landing() {
             <p className="mt-4 text-sm">
               Unduh deck gaya visual atau jadwalkan sesi design jam berikutnya.
             </p>
-            <Link to="/login">
-              <Button className="mt-4 w-full rounded-full bg-white/10 text-white hover:bg-white/20">
-                Masuk
-              </Button>
-            </Link>
+            <Button onClick={() => handleLoginClick('/login')} className="mt-4 w-full rounded-full bg-white/10 text-white hover:bg-white/20">
+              Masuk
+            </Button>
           </div>
         </div>
         <div className="border-t border-[#142117] py-6 text-center text-xs text-[#7a8573]">
@@ -655,5 +703,28 @@ export function Landing() {
         </div>
       </footer>
     </div>
+    
+    {/* Loading Video Modal */}
+    {showLoading && (
+      <div 
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black transition-opacity duration-100"
+        style={{ backgroundColor: 'black' }}
+      >
+        <div className="relative w-full h-full flex items-center justify-center">
+          <video 
+            key={Date.now()} // Force re-render video
+            autoPlay 
+            muted 
+            playsInline
+            className="max-w-full max-h-full object-contain scale-125"
+            onEnded={handleVideoEnd}
+          >
+            <source src={VideoLoading} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </div>
+    )}
+    </>
   )
 }

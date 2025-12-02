@@ -29,7 +29,7 @@ export function BackgroundCarousel({ images, autoSlide = true, slideInterval = 5
         className="relative w-full h-full"
         style={{ 
           transform: `translateX(-${currentIndex * 100}%)`,
-          transition: isTransitioning ? 'transform 2s cubic-bezier(0.4, 0, 0.2, 1)' : 'none'
+          transition: isTransitioning ? 'transform 1s ease-in-out' : 'none'
         }}
       >
         <div className="flex h-full">

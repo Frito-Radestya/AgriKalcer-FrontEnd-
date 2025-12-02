@@ -4,7 +4,8 @@ import { useAuth } from '@/context/useAuth'
 import { Button } from '@/components/ui/Button'
 import { Input, Label } from '@/components/ui/Input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
-import { AlertCircle, ArrowLeft, User, Mail, Lock, Check } from 'lucide-react'
+import { AlertCircle, ArrowLeft, User, Mail, Lock, Check, Eye, EyeOff } from 'lucide-react'
+import LogoWeb from '../../assets/iconlogo1.png'
 
 export function Register() {
   const [formData, setFormData] = useState({
@@ -16,6 +17,8 @@ export function Register() {
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [registrationSuccess, setRegistrationSuccess] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const { register } = useAuth()
   const navigate = useNavigate()
 
@@ -30,6 +33,13 @@ export function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    
+    // Validasi email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(formData.email)) {
+      setError('Format email tidak valid')
+      return
+    }
     
     // Basic validation
     if (formData.password !== formData.confirmPassword) {
@@ -54,7 +64,18 @@ export function Register() {
       if (result.success) {
         setRegistrationSuccess(true)
       } else {
-        setError(result.error || 'Terjadi kesalahan saat mendaftar')
+        // Pesan error spesifik
+        if (result.error?.includes('already registered') || result.error?.includes('exists')) {
+          setError('Email sudah digunakan. Gunakan email lain.')
+        } else if (result.error?.includes('email')) {
+          setError('Email tidak valid atau sudah terdaftar')
+        } else if (result.error?.includes('password')) {
+          setError('Password tidak valid')
+        } else if (result.error?.includes('name')) {
+          setError('Nama tidak valid')
+        } else {
+          setError(result.error || 'Terjadi kesalahan saat mendaftar')
+        }
       }
     } catch (err) {
       setError('Terjadi kesalahan. Silakan coba lagi nanti.')
@@ -72,7 +93,7 @@ export function Register() {
             alt="Latar agrikultur"
             className="h-full w-full object-cover opacity-20"
           />
-          <div className="absolute inset-0 bg-gradient-to-br from-[#08130d] via-[#0b130f]/90 to-[#1c2f22]/85" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#08130d] via-[#0b130f]/90 to-[#1c2f22]/85 rounded-l-3xl" />
         </div>
         <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-16">
           <Card className="w-full max-w-md border border-white/10 bg-white/5 backdrop-blur-2xl text-white shadow-[0_25px_60px_rgba(0,0,0,0.35)]">
@@ -107,13 +128,13 @@ export function Register() {
           alt="Latar agrikultur"
           className="h-full w-full object-cover opacity-20"
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-[#08130d] via-[#0b130f]/90 to-[#1c2f22]/85" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#08130d] via-[#0b130f]/90 to-[#1c2f22]/85 rounded-l-3xl" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_0%,rgba(248,192,107,0.2),transparent_55%)]" />
       </div>
 
       <div className="relative z-10 min-h-screen flex flex-col lg:flex-row">
         {/* Left Side - Branding */}
-        <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+        <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden rounded-r-3xl">
           <div className="absolute inset-0">
             <img
               src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1600&q=80"
@@ -123,14 +144,14 @@ export function Register() {
             <div className="absolute inset-0 bg-gradient-to-br from-[#08130d] via-[#0b130f]/80 to-transparent" />
           </div>
 
-          <div className="relative z-10 flex flex-col justify-center px-14 py-20 text-white space-y-8">
+          <div className="relative z-10 flex flex-col justify-center px-14 py-12 text-white space-y-6">
             <div>
               <p className="text-xs uppercase tracking-[0.45em] text-[#ffd12f]">Agri Kalcer</p>
               <div className="flex items-center gap-3 mt-4">
-                <div className="bg-[#ffe457] text-[#1b2c1f] p-3 rounded-2xl shadow-2xl">
-                  <User className="h-8 w-8" />
-                </div>
-                <h1 className="text-4xl font-semibold">Aktifkan Workspace Lumbung Tani</h1>
+                <div className="flex items-center justify-center w-16 h-16 rounded-full bg-white/10 backdrop-blur-sm overflow-hidden border-2 border-green-500">
+                <img src={LogoWeb} alt="Logo" className="h-14 w-14 object-cover rounded-full scale-110" />
+              </div>
+                <h1 className="text-3xl font-semibold">Aktifkan Workspace Lumbung Tani</h1>
               </div>
             </div>
             <p className="text-lg text-[#e0d6c6] leading-relaxed max-w-xl">
@@ -154,12 +175,12 @@ export function Register() {
         </div>
 
         {/* Right Side - Registration Form */}
-        <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-12">
+        <div className="w-full lg:w-1/2 flex items-start justify-center px-6 pt-1 pb-12">
           <div className="w-full max-w-md">
             {/* Back Button */}
             <Button
               variant="ghost"
-              className="mb-6 px-0 text-[#c4bbab] hover:text-white hover:bg-transparent"
+              className="mb-0 px-0 text-[#c4bbab] hover:text-white hover:bg-transparent"
               onClick={() => navigate(-1)}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -168,8 +189,8 @@ export function Register() {
 
             {/* Mobile Logo */}
             <div className="lg:hidden flex flex-col items-center text-center mb-8 space-y-3">
-              <div className="bg-[#ffe457] text-[#1b2c1f] p-3 rounded-2xl shadow-xl">
-                <User className="h-8 w-8" />
+              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-white/10 backdrop-blur-sm overflow-hidden border-2 border-green-500">
+                <img src={LogoWeb} alt="Logo" className="h-14 w-14 object-cover rounded-full scale-110" />
               </div>
               <div>
                 <p className="text-xs uppercase tracking-[0.45em] text-[#ffd12f]">Agri Kalcer</p>
@@ -248,14 +269,25 @@ export function Register() {
                       <Input
                         id="password"
                         name="password"
-                        type="password"
+                        type={showPassword ? 'text' : 'password'}
                         placeholder="••••••••"
                         value={formData.password}
                         onChange={handleChange}
                         required
                         minLength={6}
-                        className="h-12 rounded-2xl pl-12 border-white/15 bg-white/5 text-white placeholder:text-white/40 focus-visible:ring-[#ffe457]"
+                        className="h-12 rounded-2xl pl-12 pr-12 border-white/15 bg-white/5 text-white placeholder:text-white/40 focus-visible:ring-[#ffe457]"
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-5 w-5" />
+                        ) : (
+                          <Eye className="h-5 w-5" />
+                        )}
+                      </button>
                     </div>
                     <p className="text-xs text-[#b8af9f] mt-1">Minimal 6 karakter</p>
                   </div>
@@ -271,13 +303,24 @@ export function Register() {
                       <Input
                         id="confirmPassword"
                         name="confirmPassword"
-                        type="password"
+                        type={showConfirmPassword ? 'text' : 'password'}
                         placeholder="••••••••"
                         value={formData.confirmPassword}
                         onChange={handleChange}
                         required
-                        className="h-12 rounded-2xl pl-12 border-white/15 bg-white/5 text-white placeholder:text-white/40 focus-visible:ring-[#ffe457]"
+                        className="h-12 rounded-2xl pl-12 pr-12 border-white/15 bg-white/5 text-white placeholder:text-white/40 focus-visible:ring-[#ffe457]"
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors"
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff className="h-5 w-5" />
+                        ) : (
+                          <Eye className="h-5 w-5" />
+                        )}
+                      </button>
                     </div>
                   </div>
 
@@ -300,7 +343,7 @@ export function Register() {
               </CardContent>
             </Card>
 
-            <div className="mt-8 text-center text-xs text-[#9db892] tracking-[0.3em] uppercase">
+            <div className="mt-4 text-center text-xs text-[#9db892] tracking-[0.3em] uppercase">
               2025 · Agri Kalcer Collective
             </div>
           </div>

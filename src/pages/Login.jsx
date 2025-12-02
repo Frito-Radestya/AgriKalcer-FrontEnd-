@@ -4,12 +4,17 @@ import { useAuth } from '@/context/useAuth'
 import { Button } from '@/components/ui/Button'
 import { Input, Label } from '@/components/ui/Input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Sprout, AlertCircle } from 'lucide-react'
+import { AlertCircle, Check, Eye, EyeOff } from 'lucide-react'
+import Pertanian4 from '../../assets/Pertanian4.jpg'
+import LogoWeb from '../../assets/iconlogo1.png'
 
 export function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [loginSuccess, setLoginSuccess] = useState(false)
+  const [rememberMe, setRememberMe] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const { login } = useAuth()
   const navigate = useNavigate()
 
@@ -17,34 +22,86 @@ export function Login() {
     e.preventDefault()
     setError('')
 
+    // Validasi email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      setError('Format email tidak valid')
+      return
+    }
+
     const result = await login(email, password)
     if (result.success) {
-      navigate('/dashboard')
+      setLoginSuccess(true)
     } else {
-      setError(result.error)
+      // Pesan error spesifik
+      if (result.error?.includes('credentials') || result.error?.includes('Invalid')) {
+        setError('Email atau password salah')
+      } else if (result.error?.includes('email')) {
+        setError('Email tidak ditemukan')
+      } else if (result.error?.includes('password')) {
+        setError('Password salah')
+      } else {
+        setError(result.error || 'Terjadi kesalahan. Silakan coba lagi.')
+      }
     }
+  }
+
+  if (loginSuccess) {
+    return (
+      <div className="relative min-h-screen overflow-hidden bg-[#0b130f] text-[#f7f3eb]">
+        <div className="absolute inset-0">
+          <img
+            src={Pertanian4}
+            alt="Latar agrikultur"
+            className="h-full w-full object-cover opacity-20"
+          />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#08130d] via-[#0b130f]/90 to-[#1c2f22]/85 rounded-l-3xl" />
+        </div>
+        <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-16">
+          <Card className="w-full max-w-md border border-white/10 bg-white/5 backdrop-blur-2xl text-white shadow-[0_25px_60px_rgba(0,0,0,0.35)]">
+            <CardHeader className="space-y-3 pb-6">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#ffe457]/20">
+                <Check className="h-7 w-7 text-[#ffe457]" />
+              </div>
+              <CardTitle className="text-2xl font-semibold text-center">Selamat Datang Kembali!</CardTitle>
+              <CardDescription className="text-center text-[#d3c9b6]">
+                Login berhasil. Selamat datang di Lumbung Tani Platform.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <Button
+                onClick={() => navigate('/dashboard')}
+                className="w-full h-12 rounded-full bg-[#ffe457] text-[#1b2c1f] hover:bg-[#ffd12f] font-semibold"
+              >
+                Masuk ke Dashboard
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#0b130f] text-[#f7f3eb]">
       <div className="absolute inset-0">
         <img
-          src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=2000&q=80"
+          src={Pertanian4}
           alt="Latar agrikultur"
           className="h-full w-full object-cover opacity-20"
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-[#08130d] via-[#0b130f]/90 to-[#1c2f22]/85" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#08130d] via-[#0b130f]/90 to-[#1c2f22]/85 rounded-l-3xl" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(205,229,125,0.2),transparent_55%)]" />
       </div>
 
       <div className="relative z-10 min-h-screen flex flex-col lg:flex-row">
         {/* Left Side - Branding */}
-        <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+        <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden rounded-r-3xl">
           <div className="absolute inset-0">
             <img
-              src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=1600&q=80"
-              alt="Farm"
-              className="h-full w-full object-cover opacity-30"
+              src={Pertanian4}
+              alt="Latar agrikultur"
+              className="h-full w-full object-cover opacity-20"
             />
             <div className="absolute inset-0 bg-gradient-to-br from-[#08130d] via-[#0b130f]/80 to-transparent" />
           </div>
@@ -53,9 +110,9 @@ export function Login() {
             <div>
               <p className="text-xs uppercase tracking-[0.45em] text-[#ffd12f]">Agri Kalcer</p>
               <div className="flex items-center gap-3 mt-4">
-                <div className="bg-[#ffe457] text-[#1b2c1f] p-3 rounded-2xl shadow-2xl">
-                  <Sprout className="h-8 w-8" />
-                </div>
+                <div className="flex items-center justify-center w-16 h-16 rounded-full bg-white/10 backdrop-blur-sm overflow-hidden border-2 border-green-500">
+                <img src={LogoWeb} alt="Logo" className="h-14 w-14 object-cover rounded-full scale-110" />
+              </div>
                 <h1 className="text-4xl font-semibold">Lumbung Tani Platform</h1>
               </div>
             </div>
@@ -85,8 +142,8 @@ export function Login() {
           <div className="w-full max-w-md">
             {/* Mobile Logo */}
             <div className="lg:hidden flex flex-col items-center text-center mb-8 space-y-3">
-              <div className="bg-[#ffe457] text-[#1b2c1f] p-3 rounded-2xl shadow-xl">
-                <Sprout className="h-8 w-8" />
+              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-white/10 backdrop-blur-sm overflow-hidden border-2 border-green-500">
+                <img src={LogoWeb} alt="Logo" className="h-14 w-14 object-cover rounded-full scale-110" />
               </div>
               <div>
                 <p className="text-xs uppercase tracking-[0.45em] text-[#ffd12f]">Agri Kalcer</p>
@@ -131,15 +188,28 @@ export function Login() {
                     <Label htmlFor="password" className="text-sm font-medium text-[#d3c9b6]">
                       Password
                     </Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      className="h-12 rounded-2xl border-white/15 bg-white/5 text-white placeholder:text-white/40 focus-visible:ring-[#ffe457] focus-visible:border-white/30"
-                    />
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        className="h-12 rounded-2xl border-white/15 bg-white/5 text-white placeholder:text-white/40 focus-visible:ring-[#ffe457] focus-visible:border-white/30 pr-12"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white transition-colors"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-5 w-5" />
+                        ) : (
+                          <Eye className="h-5 w-5" />
+                        )}
+                      </button>
+                    </div>
                   </div>
 
                   <div className="flex items-center justify-between text-sm text-[#c4bbab]">
@@ -147,13 +217,15 @@ export function Login() {
                       <input
                         id="remember"
                         type="checkbox"
+                        checked={rememberMe}
+                        onChange={(e) => setRememberMe(e.target.checked)}
                         className="h-4 w-4 rounded border-white/30 bg-transparent text-[#ffe457] focus:ring-[#ffe457]"
                       />
                       Ingat saya
                     </label>
-                    <a href="#" className="text-[#ffe457] hover:text-white transition-colors">
+                    <Link to="/forgot-password" className="text-[#ffe457] hover:text-white transition-colors">
                       Lupa password?
-                    </a>
+                    </Link>
                   </div>
 
                   <Button
@@ -165,7 +237,7 @@ export function Login() {
                   </Button>
                 </form>
 
-                <div className="mt-6 text-center text-sm text-[#c4bbab]">
+                <div className="mt-4 text-center text-sm text-[#c4bbab]">
                   Belum punya akun?{' '}
                   <Link to="/register" className="font-semibold text-[#ffe457] hover:text-white">
                     Daftar sekarang

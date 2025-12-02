@@ -7,7 +7,7 @@ import { Modal } from '@/components/ui/Modal'
 import { Badge } from '@/components/ui/Badge'
 import { MapDisplay } from '@/components/MapDisplay'
 import { MapPicker } from '@/components/MapPicker'
-import { MapPin, Plus, Edit, Trash2, Map } from 'lucide-react'
+import { MapPin, Plus, Edit, Trash2, Map, Navigation } from 'lucide-react'
 
 export function Lands() {
   const { lands, addLand, updateLand, deleteLand, plants } = useData()
@@ -19,8 +19,8 @@ export function Lands() {
     location: '',
     area: '',
     soilType: '',
-    latitude: null,
-    longitude: null,
+    latitude: '',
+    longitude: '',
     notes: '',
   })
 
@@ -73,10 +73,13 @@ export function Lands() {
     e.preventDefault()
     
     const landData = {
-      ...formData,
-      area: parseFloat(formData.area),
+      name: formData.name,
+      area_size: parseFloat(formData.area) || 0,
+      location: formData.location,
       latitude: formData.latitude ? parseFloat(formData.latitude) : null,
       longitude: formData.longitude ? parseFloat(formData.longitude) : null,
+      soilType: formData.soilType,
+      notes: formData.notes,
     }
     
     if (editingLand) {
@@ -91,12 +94,12 @@ export function Lands() {
   const handleEdit = (land) => {
     setEditingLand(land)
     setFormData({
-      name: land.name,
-      area: land.area.toString(),
-      location: land.location,
-      latitude: land.latitude || -7.7956,
-      longitude: land.longitude || 110.3695,
-      soilType: land.soilType,
+      name: land.name || land.landName || '',
+      area: land.area_size || land.landArea || '',
+      location: land.location || '',
+      latitude: land.latitude ? String(land.latitude) : '',
+      longitude: land.longitude ? String(land.longitude) : '',
+      soilType: land.soilType || '',
       notes: land.notes || '',
     })
     setIsModalOpen(true)
@@ -116,8 +119,8 @@ export function Lands() {
       location: '',
       area: '',
       soilType: '',
-      latitude: null,
-      longitude: null,
+      latitude: '',
+      longitude: '',
       notes: '',
     })
   }
@@ -133,6 +136,32 @@ export function Lands() {
     return plants.filter(p => p.landName === landName && p.status === 'active').length
   }
 
+  // Update all lands with null area_size
+  const updateAllLandsArea = async () => {
+    const landsToUpdate = lands.filter(land => !land.landArea || land.landArea === '')
+    
+    if (landsToUpdate.length === 0) {
+      alert('Semua lahan sudah memiliki data luas!')
+      return
+    }
+    
+    if (confirm(`Ada ${landsToUpdate.length} lahan yang belum memiliki luas. Apakah Anda ingin mengupdate semua dengan luas default 1000 m²?`)) {
+      for (const land of landsToUpdate) {
+        const landData = {
+          name: land.landName,
+          area_size: 1000, // Default value
+          location: land.location,
+          latitude: land.latitude,
+          longitude: land.longitude,
+          soilType: land.soilType,
+          notes: land.notes,
+        }
+        await updateLand(land.id, landData)
+      }
+      alert('Berhasil mengupdate semua lahan!')
+    }
+  }
+
   return (
     <div className="space-y-8 lg:space-y-10">
       {/* Header */}
@@ -143,14 +172,24 @@ export function Lands() {
         </div>
         <div className="flex gap-2">
           {lands.length > 0 && (
-            <Button 
-              variant="outline" 
-              onClick={() => setShowMapView(!showMapView)}
-              className="flex items-center gap-2"
-            >
-              <Map className="h-4 w-4" />
-              {showMapView ? 'Tampil Grid' : 'Tampil Peta'}
-            </Button>
+            <>
+              <Button 
+                variant="outline" 
+                onClick={() => setShowMapView(!showMapView)}
+                className="flex items-center gap-2"
+              >
+                <Map className="h-4 w-4" />
+                {showMapView ? 'Tampil Grid' : 'Tampil Peta'}
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={updateAllLandsArea}
+                className="flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Update Luas Lahan
+              </Button>
+            </>
           )}
           <Button onClick={() => setIsModalOpen(true)} className="brand-btn">
             <Plus className="h-4 w-4 mr-2" />
@@ -195,7 +234,7 @@ export function Lands() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {lands.map((land) => {
-                const activePlants = getPlantCount(land.name)
+                const activePlants = getPlantCount(land.landName)
                 
                 return (
                   <Card key={land.id}>
@@ -204,10 +243,7 @@ export function Lands() {
                         <div className="flex items-center gap-2">
                           <MapPin className="h-5 w-5 text-primary" />
                           <div>
-                            <CardTitle className="text-lg">{land.name}</CardTitle>
-                            <p className="text-sm text-muted-foreground">
-                              {land.area} m²
-                            </p>
+                            <CardTitle className="text-lg">{land.landName}{land.landArea ? ` (${land.landArea} m²)` : ''}</CardTitle>
                           </div>
                         </div>
                         {activePlants > 0 && (
@@ -293,7 +329,7 @@ export function Lands() {
             <Label htmlFor="name">Nama Lahan *</Label>
             <Input
               id="name"
-              placeholder="Contoh: Sawah A"
+              placeholder="Masukkan nama lahan"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
@@ -305,7 +341,7 @@ export function Lands() {
             <Input
               id="area"
               type="number"
-              placeholder="1000"
+              placeholder="Masukkan luas lahan dalam m²"
               value={formData.area}
               onChange={(e) => setFormData({ ...formData, area: e.target.value })}
               required
@@ -342,7 +378,7 @@ export function Lands() {
               Koordinat otomatis dari alamat. Seret marker untuk menyesuaikan lokasi jika perlu.
             </p>
             <MapPicker
-              value={{ lat: formData.latitude || -7.7956, lng: formData.longitude || 110.3695 }}
+              value={{ lat: parseFloat(formData.latitude) || -7.7956, lng: parseFloat(formData.longitude) || 110.3695 }}
               onChange={(pos) => setFormData({ ...formData, latitude: pos.lat, longitude: pos.lng })}
               height="250px"
               address={formData.location}

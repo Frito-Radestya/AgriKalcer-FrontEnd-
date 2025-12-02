@@ -142,9 +142,16 @@ export function Plants() {
                   </div>
                 </CardHeader>
                 <CardContent className="pt-2 space-y-4">
-                  <div className="flex items-center gap-2 text-sm">
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
-                    <span>{plant.landName} ({plant.landArea} m²)</span>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 text-sm">
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">Nama Lahan:</span>
+                      <span>{plant.landName}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm ml-6">
+                      <span className="text-muted-foreground">Luas Lahan:</span>
+                      <span>{plant.landArea} m²</span>
+                    </div>
                   </div>
                   
                   <div className="flex items-center gap-2 text-sm">
@@ -254,7 +261,7 @@ export function Plants() {
                 <option value="">Pilih Lahan</option>
                 {lands.map((land) => (
                   <option key={land.id} value={land.id}>
-                    {land.landName} ({land.landArea} m²)
+                    {land.landName} - Luas: {land.landArea} m²
                   </option>
                 ))}
               </Select>
@@ -263,7 +270,7 @@ export function Plants() {
             <div className="space-y-2">
               <Label>Atau Buat Lahan Baru</Label>
               <Input
-                placeholder="Nama Lahan"
+                placeholder="Masukkan nama lahan baru"
                 value={formData.newLandName}
                 onChange={(e) => setFormData({ ...formData, newLandName: e.target.value, landId: '' })}
               />
@@ -272,11 +279,11 @@ export function Plants() {
 
           {formData.newLandName && (
             <div className="space-y-2">
-              <Label htmlFor="newLandArea">Luas Lahan Baru (m²)</Label>
+              <Label htmlFor="newLandArea">Luas Lahan (m²)</Label>
               <Input
                 id="newLandArea"
                 type="number"
-                placeholder="1000"
+                placeholder="Masukkan luas lahan dalam m²"
                 value={formData.newLandArea}
                 onChange={(e) => setFormData({ ...formData, newLandArea: e.target.value })}
                 required={!!formData.newLandName}
@@ -288,7 +295,7 @@ export function Plants() {
             <div className="space-y-2">
               <Label>Lokasi Lahan (Klik pada peta)</Label>
               <MapPicker
-                value={{ lat: formData.newLat, lng: formData.newLng }}
+                value={{ lat: parseFloat(formData.newLat) || -7.7956, lng: parseFloat(formData.newLng) || 110.3695 }}
                 onChange={(pos) => setFormData({ ...formData, newLat: pos.lat, newLng: pos.lng })}
                 height="250px"
               />

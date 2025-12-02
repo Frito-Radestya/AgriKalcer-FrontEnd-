@@ -6,6 +6,7 @@ import { Layout } from './components/Layout'
 import { Landing } from './pages/Landing'
 import { Login } from './pages/Login'
 import { Register } from './pages/Register'
+import { ForgotPassword } from './pages/ForgotPassword'
 import { Dashboard } from './pages/Dashboard'
 import { Plants } from './pages/Plants'
 import { Maintenance } from './pages/Maintenance'
@@ -14,6 +15,7 @@ import { Finances } from './pages/Finances'
 import { Analytics } from './pages/Analytics'
 import { Lands } from './pages/Lands'
 import { Notifications } from './pages/Notifications'
+import AIChat from './pages/AIChat'
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth()
@@ -38,6 +40,8 @@ function AppRoutes() {
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ForgotPassword />} />
       <Route
         path="/dashboard"
         element={
@@ -114,6 +118,16 @@ function AppRoutes() {
           <ProtectedRoute>
             <Layout>
               <Notifications />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/ai-chat"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <AIChat />
             </Layout>
           </ProtectedRoute>
         }

@@ -264,7 +264,7 @@ export function MapPicker({ value = { lat: -7.7956, lng: 110.3695 }, onChange, h
       </div>
       <p className="text-xs text-muted-foreground mt-1">
         {address ? `Lokasi dari: ${address} | ` : ''}
-        Klik peta atau seret marker untuk menyesuaikan lokasi. Koordinat: {value.lat.toFixed(6)}, {value.lng.toFixed(6)}
+        Klik peta atau seret marker untuk menyesuaikan lokasi. Koordinat: {typeof value.lat === 'number' ? value.lat.toFixed(6) : '0.000000'}, {typeof value.lng === 'number' ? value.lng.toFixed(6) : '0.000000'}
       </p>
     </div>
   )

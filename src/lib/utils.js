@@ -38,13 +38,13 @@ export function formatDate(date) {
 
 export function calculateDaysDifference(startDate, endDate) {
   // Handle invalid dates
-  if (!startDate || !endDate) return 0
+  if (!startDate || !endDate) return 1
   
   try {
     const start = new Date(startDate)
     const end = new Date(endDate)
     
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) return 0
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return 1
     
     // Use local time to avoid timezone issues
     // Set both times to midnight to compare full days
@@ -53,9 +53,11 @@ export function calculateDaysDifference(startDate, endDate) {
     
     const diffTime = endLocal - startLocal
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    return diffDays
+    
+    // Hari pertama dimulai dari 1, bukan 0
+    return diffDays + 1
   } catch (error) {
-    return 0
+    return 1
   }
 }
 

@@ -10,6 +10,7 @@ const NOTIFICATION_ICONS = {
   weeding: Sprout,
   pesticide: Bug,
   general: Bell,
+  'ai-recommendation': Bell, // AI notifications use Bell icon
 }
 
 function NotificationItem({ notification, onMarkAsRead, onDelete }) {
@@ -70,8 +71,16 @@ export function Notifications() {
   const unreadNotifications = notifications.filter(n => !n.read)
   const readNotifications = notifications.filter(n => n.read)
 
-  const handleMarkAsRead = (id) => {
-    markNotificationAsRead(id)
+  const handleMarkAsRead = async (id) => {
+    console.log(' Mark as read clicked for notification ID:', id)
+    try {
+      console.log(' Calling markNotificationAsRead...')
+      await markNotificationAsRead(id)
+      console.log(' Mark as read successful')
+    } catch (error) {
+      console.error(' Error marking notification as read:', error)
+      alert('Gagal menandai notifikasi: ' + error.message)
+    }
   }
 
   const handleMarkAllAsRead = async () => {
