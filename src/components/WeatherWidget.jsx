@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Cloud, CloudRain, Sun, Wind, Droplets, Thermometer } from 'lucide-react'
+import { storage } from '@/lib/storage'
 
 const API_KEY = import.meta.env.VITE_WEATHER_API_KEY || 'BRAGKGfbJes7LOKFg7ajAUyDDz284fXv'
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4001'
 
 export function WeatherWidget() {
   const [weather, setWeather] = useState(null)
@@ -193,6 +195,35 @@ export function WeatherWidget() {
       setLoading(false)
     }
   }
+
+  // Kirim kondisi cuaca ke backend untuk membuat notifikasi AI berbasis cuaca
+  useEffect(() => {
+    const sendWeatherNotification = async () => {
+      if (!weather) return
+
+      try {
+        const token = storage.get('TOKEN')
+        if (!token) return
+
+        const main = weather.weather?.[0]?.main || ''
+        const description = weather.weather?.[0]?.description || ''
+        const temp = weather.main?.temp
+
+        await fetch(`${API_BASE}/api/notifications/weather-suggestion`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ main, description, temp }),
+        })
+      } catch (err) {
+        console.error('Error sending weather notification:', err)
+      }
+    }
+
+    sendWeatherNotification()
+  }, [weather])
 
   
   const getWeatherIcon = (main) => {
