@@ -13,7 +13,7 @@ export function DataProvider({ children }) {
   const [finances, setFinances] = useState([])
   const [lands, setLands] = useState([])
   const [notifications, setNotifications] = useState([])
-  const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4001'
+  const API = import.meta.env.VITE_API_URL || 'https://agrikalcer-backend-production.up.railway.app'
 
   // Helper function to refresh all data
   const refreshAllData = async () => {
@@ -23,19 +23,19 @@ export function DataProvider({ children }) {
     try {
       // Fetch all data from API
       const [maintenanceRes, harvestsRes, financesRes, notificationsRes, plantsRes] = await Promise.all([
-        fetch(`${API_BASE}/api/maintenance`, {
+        fetch(`${API}/api/maintenance`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch(`${API_BASE}/api/harvests`, {
+        fetch(`${API}/api/harvests`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch(`${API_BASE}/api/finances`, {
+        fetch(`${API}/api/finances`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch(`${API_BASE}/api/notifications`, {
+        fetch(`${API}/api/notifications`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch(`${API_BASE}/api/plants`, {
+        fetch(`${API}/api/plants`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ])
@@ -118,7 +118,7 @@ export function DataProvider({ children }) {
       }
 
       // Refresh lands
-      const landsRes = await fetch(`${API_BASE}/api/lands`, {
+      const landsRes = await fetch(`${API}/api/lands`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       if (landsRes.ok) {
@@ -148,7 +148,7 @@ export function DataProvider({ children }) {
     if (!token) return
     
     try {
-      const notificationsRes = await fetch(`${API_BASE}/api/notifications`, {
+      const notificationsRes = await fetch(`${API}/api/notifications`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       if (notificationsRes.ok) {
@@ -174,19 +174,19 @@ export function DataProvider({ children }) {
         try {
           // Fetch maintenance, harvests, finances, notifications, plants
           const [maintenanceRes, harvestsRes, financesRes, notificationsRes, plantsRes] = await Promise.all([
-            fetch(`${API_BASE}/api/maintenance`, {
+            fetch(`${API}/api/maintenance`, {
               headers: { Authorization: `Bearer ${token}` },
             }),
-            fetch(`${API_BASE}/api/harvests`, {
+            fetch(`${API}/api/harvests`, {
               headers: { Authorization: `Bearer ${token}` },
             }),
-            fetch(`${API_BASE}/api/finances`, {
+            fetch(`${API}/api/finances`, {
               headers: { Authorization: `Bearer ${token}` },
             }),
-            fetch(`${API_BASE}/api/notifications`, {
+            fetch(`${API}/api/notifications`, {
               headers: { Authorization: `Bearer ${token}` },
             }),
-            fetch(`${API_BASE}/api/plants`, {
+            fetch(`${API}/api/plants`, {
               headers: { Authorization: `Bearer ${token}` },
             }),
           ])
@@ -304,7 +304,7 @@ export function DataProvider({ children }) {
       loadFromAPI()
       
       // Fetch lands from API
-      fetch(`${API_BASE}/api/lands`, {
+      fetch(`${API}/api/lands`, {
         headers: { Authorization: `Bearer ${token}` },
       })
         .then(async (res) => {
@@ -378,7 +378,7 @@ export function DataProvider({ children }) {
       window.removeEventListener('storage', handleStorageChange)
       clearInterval(intervalId)
     }
-  }, [user, API_BASE])
+  }, [user, API])
 
   // Plants CRUD
   const addPlant = async (plant) => {
@@ -403,7 +403,7 @@ export function DataProvider({ children }) {
     let plantTypeIdFromName = null
     if (plantTypeFromFrontend) {
       try {
-        const resTypes = await fetch(`${API_BASE}/api/plant-types?name=${encodeURIComponent(plantTypeFromFrontend.name)}`, {
+        const resTypes = await fetch(`${API}/api/plant-types?name=${encodeURIComponent(plantTypeFromFrontend.name)}`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         if (resTypes.ok) {
@@ -413,7 +413,7 @@ export function DataProvider({ children }) {
           }
         }
       } catch (_) {
-        const resAll = await fetch(`${API_BASE}/api/plant-types`, {
+        const resAll = await fetch(`${API}/api/plant-types`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         if (resAll.ok) {
@@ -424,7 +424,7 @@ export function DataProvider({ children }) {
       }
     }
 
-    const res = await fetch(`${API_BASE}/api/plants`, {
+    const res = await fetch(`${API}/api/plants`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({
@@ -491,7 +491,7 @@ export function DataProvider({ children }) {
     let plantTypeIdFromName = null
     if (plantTypeFromFrontend) {
       try {
-        const resTypes = await fetch(`${API_BASE}/api/plant-types?name=${encodeURIComponent(plantTypeFromFrontend.name)}`, {
+        const resTypes = await fetch(`${API}/api/plant-types?name=${encodeURIComponent(plantTypeFromFrontend.name)}`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         if (resTypes.ok) {
@@ -501,7 +501,7 @@ export function DataProvider({ children }) {
           }
         }
       } catch (_) {
-        const resAll = await fetch(`${API_BASE}/api/plant-types`, {
+        const resAll = await fetch(`${API}/api/plant-types`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         if (resAll.ok) {
@@ -520,7 +520,7 @@ export function DataProvider({ children }) {
       land_id: updates.landId || null,
       plant_type_id: plantTypeIdFromName,
     }
-    const res = await fetch(`${API_BASE}/api/plants/${id}`, {
+    const res = await fetch(`${API}/api/plants/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(body),
@@ -563,7 +563,7 @@ export function DataProvider({ children }) {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/api/plants/${id}`, {
+      const res = await fetch(`${API}/api/plants/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -587,7 +587,7 @@ export function DataProvider({ children }) {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/api/maintenance`, {
+      const res = await fetch(`${API}/api/maintenance`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -634,7 +634,7 @@ export function DataProvider({ children }) {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/api/maintenance/${id}`, {
+      const res = await fetch(`${API}/api/maintenance/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -665,7 +665,7 @@ export function DataProvider({ children }) {
     }
 
     try {
-      await fetch(`${API_BASE}/api/maintenance/${id}`, {
+      await fetch(`${API}/api/maintenance/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -685,7 +685,7 @@ export function DataProvider({ children }) {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/api/harvests`, {
+      const res = await fetch(`${API}/api/harvests`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -737,7 +737,7 @@ export function DataProvider({ children }) {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/api/harvests/${id}`, {
+      const res = await fetch(`${API}/api/harvests/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -768,7 +768,7 @@ export function DataProvider({ children }) {
     }
 
     try {
-      await fetch(`${API_BASE}/api/harvests/${id}`, {
+      await fetch(`${API}/api/harvests/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -788,7 +788,7 @@ export function DataProvider({ children }) {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/api/finances`, {
+      const res = await fetch(`${API}/api/finances`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -832,7 +832,7 @@ export function DataProvider({ children }) {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/api/finances/${id}`, {
+      const res = await fetch(`${API}/api/finances/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -862,7 +862,7 @@ export function DataProvider({ children }) {
     }
 
     try {
-      await fetch(`${API_BASE}/api/finances/${id}`, {
+      await fetch(`${API}/api/finances/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -881,7 +881,7 @@ export function DataProvider({ children }) {
     if (!token) {
       throw new Error('Authentication required')
     }
-    const res = await fetch(`${API_BASE}/api/lands`, {
+    const res = await fetch(`${API}/api/lands`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ name: landData.landName || landData.name, location: landData.location, area_size: landData.landArea, latitude: landData.latitude, longitude: landData.longitude }),
@@ -900,7 +900,7 @@ export function DataProvider({ children }) {
     if (!token) {
       throw new Error('Authentication required')
     }
-    const res = await fetch(`${API_BASE}/api/lands/${id}`, {
+    const res = await fetch(`${API}/api/lands/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ name: updates.landName || updates.name, location: updates.location, area_size: updates.landArea || updates.area_size, latitude: updates.latitude, longitude: updates.longitude, notes: updates.notes }),
@@ -932,7 +932,7 @@ export function DataProvider({ children }) {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/api/lands/${id}`, {
+      const res = await fetch(`${API}/api/lands/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -953,7 +953,7 @@ export function DataProvider({ children }) {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/api/notifications`, {
+      const res = await fetch(`${API}/api/notifications`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -985,8 +985,8 @@ export function DataProvider({ children }) {
     }
 
     try {
-      console.log('🔄 Making API call to:', `${API_BASE}/api/notifications/${id}`)
-      const res = await fetch(`${API_BASE}/api/notifications/${id}`, {
+      console.log('🔄 Making API call to:', `${API}/api/notifications/${id}`)
+      const res = await fetch(`${API}/api/notifications/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ read: true }),
@@ -1045,7 +1045,7 @@ export function DataProvider({ children }) {
       const updatePromises = unreadNotifications.map(async (notification) => {
         console.log('DEBUG: Updating notification ID:', notification.id)
         
-        const res = await fetch(`${API_BASE}/api/notifications/${notification.id}`, {
+        const res = await fetch(`${API}/api/notifications/${notification.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({ read: true }),
@@ -1087,7 +1087,7 @@ export function DataProvider({ children }) {
     }
 
     try {
-      await fetch(`${API_BASE}/api/notifications/${id}`, {
+      await fetch(`${API}/api/notifications/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       })

@@ -3,7 +3,7 @@ import { Cloud, CloudRain, Sun, Wind, Droplets, Thermometer } from 'lucide-react
 import { storage } from '@/lib/storage'
 
 const API_KEY = import.meta.env.VITE_WEATHER_API_KEY || 'BRAGKGfbJes7LOKFg7ajAUyDDz284fXv'
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4001'
+const API = import.meta.env.VITE_API_URL|| 'https://agrikalcer-backend-production.up.railway.app'
 
 export function WeatherWidget() {
   const [weather, setWeather] = useState(null)
@@ -209,7 +209,7 @@ export function WeatherWidget() {
         const description = weather.weather?.[0]?.description || ''
         const temp = weather.main?.temp
 
-        await fetch(`${API_BASE}/api/notifications/weather-suggestion`, {
+        await fetch(`${API}/api/notifications/weather-suggestion`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

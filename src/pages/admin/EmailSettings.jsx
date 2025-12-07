@@ -29,12 +29,12 @@ const EmailSettings = () => {
     fetchEmailSettings();
   }, []);
 
-  const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4001';
+  const API = import.meta.env.VITE_API_URL|| 'https://agrikalcer-backend-production.up.railway.app';
 
   const fetchEmailSettings = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE}/api/email-settings`, {
+      const response = await fetch(`${API}/api/email-settings`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('TOKEN')}`
         },
@@ -113,7 +113,7 @@ const EmailSettings = () => {
         delete dataToSend.smtp_password;
       }
 
-      const response = await fetch(`${API_BASE}/api/email-settings`, {
+      const response = await fetch(`${API}/api/email-settings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -147,7 +147,7 @@ const EmailSettings = () => {
     try {
       setTesting(true);
       
-      const response = await fetch(`${API_BASE}/api/email-settings/test-connection`, {
+      const response = await fetch(`${API}/api/email-settings/test-connection`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -66,8 +66,8 @@ export default function AIChat() {
         const formData = new FormData()
         formData.append('image', selectedImage)
 
-        const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4001'
-        const uploadResponse = await fetch(`${API_BASE}/api/ai/detect-disease`, {
+        const API = import.meta.env.VITE_API_URL|| 'https://agrikalcer-backend-production.up.railway.app'
+        const uploadResponse = await fetch(`${API}/api/ai/detect-disease`, {
           method: 'POST',
           body: formData
         })
@@ -80,7 +80,7 @@ export default function AIChat() {
         }
       } else {
         // Chat biasa
-        const chatResponse = await fetch(`${API_BASE}/api/ai/chat`, {
+        const chatResponse = await fetch(`${API}/api/ai/chat`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'

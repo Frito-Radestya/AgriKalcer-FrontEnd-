@@ -37,8 +37,8 @@ export function ProfileModal({ isOpen, onClose }) {
     setIsChangingPassword(true)
     
     try {
-      const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4001'
-      const response = await fetch(`${API_BASE}/api/auth/change-password`, {
+      const API = import.meta.env.VITE_API_URL|| 'https://agrikalcer-backend-production.up.railway.app'
+      const response = await fetch(`${API}/api/auth/change-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

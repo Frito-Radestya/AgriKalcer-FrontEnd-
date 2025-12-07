@@ -5,7 +5,7 @@ import { AuthContext } from './authContext'
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
-  const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4001'
+  const API = import.meta.env.VITE_API_URL || 'https://agrikalcer-backend-production.up.railway.app'
 
   useEffect(() => {
     const currentUser = storage.get('USER')
@@ -16,7 +16,7 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     try {
-      const res = await fetch(`${API_BASE}/api/auth/login`, {
+      const res = await fetch(`${API}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -55,7 +55,7 @@ export function AuthProvider({ children }) {
       if (userData.password.length < 6) {
         return { success: false, error: 'Password minimal 6 karakter' }
       }
-      const res = await fetch(`${API_BASE}/api/auth/register`, {
+      const res = await fetch(`${API}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: userData.name, email: userData.email, password: userData.password }),

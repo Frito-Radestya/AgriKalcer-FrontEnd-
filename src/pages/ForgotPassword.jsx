@@ -7,7 +7,7 @@ import { Alert } from '@/components/ui/Alert'
 import { Spinner } from '@/components/ui/Spinner'
 import { Mail, ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4001/api'
+const API = import.meta.env.VITE_API_URL || 'https://agrikalcer-backend-production.up.railway.app/api'
 
 export default function ForgotPassword() {
   const [searchParams] = useSearchParams()
@@ -38,7 +38,7 @@ export default function ForgotPassword() {
     setMessage({ type: '', text: '' })
 
     try {
-      const response = await fetch(`${API_BASE}/auth/forgot-password`, {
+      const response = await fetch(`${API}/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
@@ -93,7 +93,7 @@ export default function ForgotPassword() {
     }
 
     try {
-      const response = await fetch(`${API_BASE}/auth/reset-password`, {
+      const response = await fetch(`${API}/auth/reset-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 

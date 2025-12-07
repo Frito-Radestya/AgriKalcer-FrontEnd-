@@ -8,7 +8,7 @@ import { Mail, ArrowLeft, CheckCircle, AlertCircle, Eye, EyeOff } from 'lucide-r
 import Pertanian4 from '../../assets/Pertanian4.jpg'
 import LogoWeb from '../../assets/iconlogo1.png'
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4001'
+const API = import.meta.env.VITE_API_URL || 'https://agrikalcer-backend-production.up.railway.app'
 
 export default function ForgotPasswordSimple() {
   const [step, setStep] = useState('request') // 'request' | 'verify' | 'success'
@@ -27,7 +27,7 @@ export default function ForgotPasswordSimple() {
     setMessage({ type: '', text: '' })
 
     try {
-      const res = await fetch(`${API_BASE}/api/auth/request-reset-otp`, {
+      const res = await fetch(`${API}/api/auth/request-reset-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
@@ -83,7 +83,7 @@ export default function ForgotPasswordSimple() {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/api/auth/reset-password-otp`, {
+      const res = await fetch(`${API}/api/auth/reset-password-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, otp, newPassword }),
