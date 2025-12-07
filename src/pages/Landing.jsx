@@ -226,20 +226,20 @@ export function Landing() {
 
   return (
     <>
-    <div className="bg-[#0b130f] text-[#f7f3eb] min-h-screen">
+    <div className={`bg-[#0b130f] text-[#f7f3eb] min-h-screen ${mobileMenuOpen ? 'overflow-hidden' : ''}`}>
       <nav className="fixed top-0 w-full z-50 border-b border-[#1c281f] bg-[#0b130f]/90 backdrop-blur-md">
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="flex items-center justify-between h-20">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-white/10 backdrop-blur-sm overflow-hidden border-2 border-green-500">
-                <img src={LogoWeb} alt="Logo" className="h-14 w-14 object-cover rounded-full scale-110" />
+        <div className="mx-auto max-w-6xl px-3 sm:px-4 md:px-6">
+          <div className="flex items-center justify-between h-16 md:h-20">
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className="flex items-center justify-center w-10 h-10 md:w-14 md:h-14 rounded-full bg-white/10 backdrop-blur-sm overflow-hidden border-2 border-green-500">
+                <img src={LogoWeb} alt="Logo" className="h-8 w-8 md:h-12 md:w-12 object-cover rounded-full scale-110" />
               </div>
               <div>
-                <p className="text-[11px] uppercase tracking-[0.3em] text-[#9db892]">Agri Kalcer</p>
-                <p className="text-xl font-semibold text-white">Lumbung Tani Platform</p>
+                <p className="text-[9px] md:text-[11px] uppercase tracking-[0.3em] text-[#9db892]">Agri Kalcer</p>
+                <p className="text-base md:text-xl font-semibold text-white">Lumbung Tani Platform</p>
               </div>
             </div>
-            <div className="hidden md:flex items-center gap-8 text-sm font-medium">
+            <div className="hidden md:flex items-center gap-4 md:gap-8 text-sm font-medium">
               <button 
                 onClick={() => scrollToSection('home')} 
                 className="text-[#d3c9b6] hover:text-white transition-colors"
@@ -285,74 +285,75 @@ export function Landing() {
         </div>
       </nav>
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-[#1c281f] bg-[#0f1913] px-6 py-4 space-y-3 text-sm">
-            {[
-              { label: 'Overview', href: 'home' },
-              { label: 'Solusi', href: 'solusi' },
-              { label: 'Modul', href: 'modules' },
-              { label: 'Insight', href: 'insight' },
-              { label: 'Kontak', href: 'contact' },
-            ].map((item) => (
-              <button
-                key={item.label}
-                onClick={() => scrollToSection(item.href)}
-                className="block w-full text-left text-[#d3c9b6] hover:text-white transition-colors"
-              >
-                {item.label}
-              </button>
-            ))}
-            <Button onClick={() => {handleLoginClick('/login'); setMobileMenuOpen(false)}} className="w-full bg-[#ffe457] text-[#1b2c1f] hover:bg-[#ffd12f]">Masuk</Button>
-          </div>
-        )}
+        <div className="fixed inset-0 z-40 md:hidden bg-[#0f1913]/95 pt-16 border-t border-[#1c281f] px-4 py-3 space-y-2 text-sm overflow-y-auto">
+          {[
+            { label: 'Overview', href: 'home' },
+            { label: 'Solusi', href: 'solusi' },
+            { label: 'Modul', href: 'modules' },
+            { label: 'Insight', href: 'insight' },
+            { label: 'Kontak', href: 'contact' },
+          ].map((item) => (
+            <button
+              key={item.label}
+              onClick={() => scrollToSection(item.href)}
+              className="block w-full text-left text-[#d3c9b6] hover:text-white transition-colors py-1"
+            >
+              {item.label}
+            </button>
+          ))}
+          <Button onClick={() => {handleLoginClick('/login'); setMobileMenuOpen(false)}} className="w-full bg-[#ffe457] text-[#1b2c1f] hover:bg-[#ffd12f] text-sm py-2">Masuk</Button>
+        </div>
+      )}
 
-      <main className="pt-20">
-        <section id="home" className="relative min-h-[480px] overflow-hidden">
+      <main className="pt-16 md:pt-20">
+        <section id="home" className="relative min-h-[420px] md:min-h-[520px] overflow-hidden">
           <BackgroundCarousel 
             images={backgroundImages} 
             autoSlide={true}
             slideInterval={5000}
           />
           <div className="relative z-10">
-            <div className="max-w-6xl mx-auto px-6 py-6 lg:py-8 grid gap-16 lg:grid-cols-[1.15fr,0.85fr]">
+            <div className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 py-2.5 md:py-6 lg:py-8 grid gap-5 md:gap-10 lg:gap-16 lg:grid-cols-[1.15fr,0.85fr]">
               <div>
-                <p className="text-sm uppercase tracking-[0.45em] text-[#ffd12f]">Design 2025</p>
-                <h1 className="mt-6 text-4xl md:text-5xl xl:text-[56px] leading-tight font-semibold text-white">
+                <p className="text-[9px] md:text-xs uppercase tracking-[0.4em] text-[#ffd12f]">Design 2025</p>
+                <h1 className="mt-2.5 md:mt-6 text-lg md:text-4xl xl:text-[56px] leading-snug md:leading-tight font-semibold text-white">
                   Manajemen pertanian terpadu untuk tim lapangan hingga boardroom
                 </h1>
-                <p className="mt-6 text-lg text-[#e0d6c6] max-w-2xl">
+                <p className="mt-2.5 md:mt-6 text-[11px] md:text-lg text-[#e0d6c6] max-w-2xl">
                   Dashboard modern dengan gaya natural earth-tone, menggabungkan perencanaan musim,
                   pelaksanaan lapangan, sampai insight finansial dalam satu kanvas yang elegan.
                 </p>
-                <div className="mt-10 flex flex-col sm:flex-row gap-4">
-                  <Button onClick={() => handleLoginClick('/register')} className="w-full sm:w-auto bg-[#ffe457] text-[#1b2c1f] hover:bg-[#ffd12f] px-8 py-6 text-lg rounded-full font-semibold">
-                    Jadwalkan Demo
+                <div className="mt-4 md:mt-10 flex flex-row flex-wrap gap-2.5 md:gap-4">
+                  <Button onClick={() => handleLoginClick('/register')} className="flex-1 min-w-[140px] bg-[#ffe457] text-[#1b2c1f] hover:bg-[#ffd12f] px-4 md:px-8 py-2 md:py-6 text-[13px] md:text-lg rounded-full font-semibold">
+                    <span className="hidden sm:inline">Jadwalkan Demo</span>
+                    <span className="sm:hidden">Demo</span>
                   </Button>
-                  <Button onClick={() => handleLoginClick('/login')} variant="outline" className="w-full sm:w-auto border-white/30 text-white hover:bg-white/10 px-8 py-6 text-lg rounded-full font-semibold">
+                  <Button onClick={() => handleLoginClick('/login')} variant="outline" className="flex-1 min-w-[140px] border-white/30 text-white hover:bg-white/10 px-4 md:px-8 py-2 md:py-6 text-[13px] md:text-lg rounded-full font-semibold">
                     Jelajahi Dashboard
                   </Button>
                 </div>
-                <div className="mt-12 grid gap-6 sm:grid-cols-3">
+                <div className="mt-5 md:mt-10 grid grid-cols-3 gap-2 md:gap-6">
                   {heroStats.map((stat) => (
                     <div
                       key={stat.label}
-                      className="rounded-3xl border border-white/10 bg-white/5 px-4 py-6 backdrop-blur"
+                      className="rounded-2xl md:rounded-3xl border border-white/10 bg-white/5 px-2.5 md:px-4 py-3 md:py-6 backdrop-blur"
                     >
-                      <p className="text-3xl font-semibold text-white">{stat.value}</p>
-                      <p className="mt-1 text-sm uppercase tracking-[0.3em] text-[#d3c9b6]">{stat.label}</p>
-                      <p className="mt-3 text-xs text-[#b8af9f]">{stat.detail}</p>
+                      <p className="text-xl md:text-3xl font-semibold text-white">{stat.value}</p>
+                      <p className="mt-0.5 md:mt-1 text-[9px] md:text-sm uppercase tracking-[0.22em] md:tracking-[0.3em] text-[#d3c9b6]">{stat.label}</p>
+                      <p className="mt-1.5 md:mt-3 text-[9px] md:text-xs text-[#b8af9f]">{stat.detail}</p>
                     </div>
                   ))}
                 </div>
               </div>
-              <div className="rounded-[32px] border border-white/15 bg-white/5 p-8 backdrop-blur-lg">
-                <p className="text-xs uppercase tracking-[0.45em] text-[#ffd12f]">Snapshot Musim</p>
-                <h3 className="mt-4 text-3xl text-white font-semibold">Panen Q1 · Kebun Lembang</h3>
-                <div className="mt-6 space-y-4 text-sm text-[#e8dfcf]">
-                  <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="rounded-[24px] md:rounded-[32px] border border-white/15 bg-white/5 p-5 md:p-8 backdrop-blur-lg">
+                <p className="text-[11px] md:text-xs uppercase tracking-[0.4em] md:tracking-[0.45em] text-[#ffd12f]">Snapshot Musim</p>
+                <h3 className="mt-3 md:mt-4 text-2xl md:text-3xl text-white font-semibold">Panen Q1 · Kebun Lembang</h3>
+                <div className="mt-4 md:mt-6 space-y-3 md:space-y-4 text-xs md:text-sm text-[#e8dfcf]">
+                  <div className="flex items-center justify-between border-b border-white/10 pb-2 md:pb-3">
                     <span>Target produksi</span>
                     <span className="font-semibold text-white">42,5 ton</span>
                   </div>
-                  <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                  <div className="flex items-center justify-between border-b border-white/10 pb-2 md:pb-3">
                     <span>Tingkat kesehatan tanaman</span>
                     <span className="font-semibold text-white">93%</span>
                   </div>
@@ -361,14 +362,14 @@ export function Landing() {
                     <span className="font-semibold text-[#f8c06b]">2 blok perlu tindakan</span>
                   </div>
                 </div>
-                <div className="mt-8 rounded-2xl bg-[#ffe457]/10 p-4 text-[#ffe457] flex items-center justify-between">
+                <div className="mt-5 md:mt-8 rounded-2xl bg-[#ffe457]/10 p-3 md:p-4 text-[#ffe457] flex items-center justify-between">
                   <div>
-                    <p className="text-sm uppercase tracking-[0.35em]">Next Action</p>
-                    <p className="text-white mt-1">Penyesuaian nutrisi blok B-12</p>
+                    <p className="text-[11px] md:text-sm uppercase tracking-[0.3em] md:tracking-[0.35em]">Next Action</p>
+                    <p className="text-xs md:text-sm text-white mt-1">Penyesuaian nutrisi blok B-12</p>
                   </div>
-                  <ArrowRight className="h-6 w-6 text-white" />
+                  <ArrowRight className="h-4 w-4 md:h-6 md:w-6 text-white" />
                 </div>
-                <div className="mt-8 text-xs text-[#a8a090]">
+                <div className="mt-4 md:mt-8 text-[11px] md:text-xs text-[#a8a090]">
                   Data tersinkron otomatis dari sensor cuaca, catatan tim, dan modul finansial.
                 </div>
               </div>
@@ -376,30 +377,30 @@ export function Landing() {
           </div>
         </section>
 
-        <section id="solusi" className="py-20 border-t border-[#142117] bg-[#0f1913]">
-          <div className="max-w-6xl mx-auto px-6">
-            <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+        <section id="solusi" className="py-12 md:py-20 border-t border-[#142117] bg-[#0f1913]">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+            <div className="flex flex-col gap-4 md:gap-6 md:flex-row md:items-end md:justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.45em] text-[#ffd12f]">Solusi 360°</p>
-                <h2 className="mt-4 text-3xl text-white font-semibold">
+                <p className="text-[11px] md:text-xs uppercase tracking-[0.4em] md:tracking-[0.45em] text-[#ffd12f]">Solusi 360°</p>
+                <h2 className="mt-3 md:mt-4 text-2xl md:text-3xl text-white font-semibold">
                   Strategi terpadu dari perencanaan hingga pasca panen
                 </h2>
               </div>
-              <Button className="self-start rounded-full bg-white/10 text-white hover:bg-white/20">
+              <Button className="self-start rounded-full bg-white/10 text-white hover:bg-white/20 text-xs md:text-sm px-3 md:px-4 py-1.5 md:py-2">
                 Lihat Studi Kasus
               </Button>
             </div>
-            <div className="mt-12 grid gap-6 md:grid-cols-3">
+            <div className="mt-8 md:mt-12 grid gap-4 md:gap-6 md:grid-cols-3">
               {strategicPillars.map((pillar) => {
                 const Icon = pillar.icon
                 return (
                   <div
                     key={pillar.title}
-                    className="rounded-[28px] border border-[#1f2c22] bg-gradient-to-b from-[#152218] to-[#0e1812] p-7 text-[#dfd6c3]"
+                    className="rounded-[22px] md:rounded-[28px] border border-[#1f2c22] bg-gradient-to-b from-[#152218] to-[#0e1812] p-4 md:p-7 text-[#dfd6c3]"
                   >
-                    <Icon className="h-10 w-10 text-[#ffd12f]" />
-                    <h3 className="mt-6 text-xl text-white font-semibold">{pillar.title}</h3>
-                    <p className="mt-3 text-sm text-[#b8af9f] leading-relaxed">{pillar.description}</p>
+                    <Icon className="h-7 w-7 md:h-10 md:w-10 text-[#ffd12f]" />
+                    <h3 className="mt-4 md:mt-6 text-base md:text-xl text-white font-semibold">{pillar.title}</h3>
+                    <p className="mt-2 md:mt-3 text-xs md:text-sm text-[#b8af9f] leading-relaxed">{pillar.description}</p>
                   </div>
                 )
               })}
@@ -407,35 +408,35 @@ export function Landing() {
           </div>
         </section>
 
-        <section className="bg-[#f6f2e9] text-[#1f261f] py-20">
-          <div className="max-w-6xl mx-auto px-6 grid gap-12 lg:grid-cols-2 items-center">
+        <section className="bg-[#f6f2e9] text-[#1f261f] py-12 md:py-20">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 grid gap-8 md:gap-12 lg:grid-cols-2 items-center">
             <div className="relative">
               <div className="absolute -inset-4 bg-[#ffe457]/30 blur-3xl" />
               <img
                 src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1200&q=80"
                 alt="Tim lapangan"
-                className="relative rounded-[32px] shadow-2xl border border-white"
+                className="relative rounded-[24px] md:rounded-[32px] shadow-2xl border border-white"
               />
             </div>
             <div>
-              <p className="text-xs uppercase tracking-[0.4em] text-[#6c7f63]">Operasional lapangan</p>
-              <h2 className="mt-4 text-3xl font-semibold text-[#1c2a1f]">
+              <p className="text-[11px] md:text-xs uppercase tracking-[0.35em] md:tracking-[0.4em] text-[#6c7f63]">Operasional lapangan</p>
+              <h2 className="mt-3 md:mt-4 text-2xl md:text-3xl font-semibold text-[#1c2a1f]">
                 Rhythm kerja yang sinkron antara agronom, operator, dan manajemen
               </h2>
-              <p className="mt-5 text-lg text-[#4b574d]">
+              <p className="mt-4 md:mt-5 text-sm md:text-lg text-[#4b574d]">
                 Mode tampilan split-panel memudahkan Anda membandingkan progres lapangan dengan
                 rencana awal tanpa meninggalkan halaman. Warna bumi yang tegas menjaga fokus tim.
               </p>
-              <div className="mt-8 grid gap-6 sm:grid-cols-2">
+              <div className="mt-6 md:mt-8 grid gap-4 md:gap-6 sm:grid-cols-2">
                 {[
                   { title: 'Checklist Taktis', detail: 'Template SOP yang bisa disesuaikan per komoditas.' },
                   { title: 'Integrasi Cuaca', detail: 'Alert mikroklimat langsung ke modul tugas.' },
                   { title: 'Log Bukti Kerja', detail: 'Foto & catatan lapangan otomatis tersimpan.' },
                   { title: 'Mode Offline', detail: 'Tetap input data ketika jaringan minim.' },
                 ].map((item) => (
-                  <div key={item.title} className="rounded-2xl border border-[#d8d0c0] p-5 bg-white/70">
-                    <p className="text-sm uppercase tracking-[0.3em] text-[#86907f]">{item.title}</p>
-                    <p className="mt-2 text-sm text-[#4b574d]">{item.detail}</p>
+                  <div key={item.title} className="rounded-2xl border border-[#d8d0c0] p-4 md:p-5 bg-white/70">
+                    <p className="text-xs md:text-sm uppercase tracking-[0.25em] md:tracking-[0.3em] text-[#86907f]">{item.title}</p>
+                    <p className="mt-1.5 md:mt-2 text-xs md:text-sm text-[#4b574d]">{item.detail}</p>
                   </div>
                 ))}
               </div>
@@ -443,19 +444,19 @@ export function Landing() {
           </div>
         </section>
 
-        <section id="modules" className="py-20 bg-[#0f1913] border-t border-[#142117]">
-          <div className="max-w-6xl mx-auto px-6">
+        <section id="modules" className="py-12 md:py-20 bg-[#0f1913] border-t border-[#142117]">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="text-center max-w-3xl mx-auto">
-              <p className="text-xs uppercase tracking-[0.45em] text-[#ffd12f]">Modul Produktivitas</p>
-              <h2 className="mt-4 text-3xl text-white font-semibold">
+              <p className="text-[11px] md:text-xs uppercase tracking-[0.4em] md:tracking-[0.45em] text-[#ffd12f]">Modul Produktivitas</p>
+              <h2 className="mt-3 md:mt-4 text-2xl md:text-3xl text-white font-semibold">
                 Semua komponen utama agribisnis dalam layout modern
               </h2>
-              <p className="mt-3 text-[#b8af9f]">
+              <p className="mt-3 text-sm md:text-base text-[#b8af9f]">
                 Pilih modul sesuai prioritas dan aktifkan hanya yang dibutuhkan. Tampilan konsisten,
                 mudah dibaca, dan siap dipakai tim lintas divisi.
               </p>
             </div>
-            <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-8 md:mt-12 grid gap-4 md:gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {modules.map((module) => {
                 const Icon = module.icon
                 return (
@@ -467,14 +468,15 @@ export function Landing() {
                       <div className="rounded-2xl bg-[#18241b] p-3">
                         <Icon className="h-8 w-8 text-[#ffd12f]" />
                       </div>
-                      <Link to="/login">
-                        <Button className="rounded-full bg-white/15 text-white hover:bg-white/25 px-4 py-1 text-sm">
+                        <Button
+                          onClick={() => handleLoginClick('/login')}
+                          className="rounded-full bg_white/15 bg-white/15 text-white hover:bg-white/25 px-3 md:px-4 py-1 text-xs md:text-sm"
+                        >
                           Buka
                         </Button>
-                      </Link>
-                    </div>
-                    <h3 className="mt-6 text-xl font-semibold text-white">{module.name}</h3>
-                    <p className="mt-3 text-sm text-[#b8af9f]">{module.description}</p>
+                      </div>
+                      <h3 className="mt-4 md:mt-6 text-base md:text-xl font-semibold text-white">{module.name}</h3>
+                      <p className="mt-2 md:mt-3 text-xs md:text-sm text-[#b8af9f]">{module.description}</p>
                   </div>
                 )
               })}
@@ -482,13 +484,13 @@ export function Landing() {
           </div>
         </section>
 
-        <section id="insight" className="py-20 bg-[#f6f2e9] text-[#1f261f]">
-          <div className="max-w-6xl mx-auto px-6">
-            <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+        <section id="insight" className="py-12 md:py-20 bg-[#f6f2e9] text-[#1f261f]">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+            <div className="flex flex-col gap-4 md:gap-6 md:flex-row md:items-center md:justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.4em] text-[#768065]">Insight Berlapis</p>
-                <h2 className="mt-3 text-3xl font-semibold text-[#1c251c]">Workflow empat fase</h2>
-                <p className="mt-3 text-[#4b574d]">
+                <p className="text-[11px] md:text-xs uppercase tracking-[0.35em] md:tracking-[0.4em] text-[#768065]">Insight Berlapis</p>
+                <h2 className="mt-3 text-2xl md:text-3xl font-semibold text-[#1c251c]">Workflow empat fase</h2>
+                <p className="mt-3 text-sm md:text-base text-[#4b574d]">
                   Visual ala timeline horizontal memberi gambaran jelas terhadap status musim. Setiap
                   kartu punya warna aksen berbeda agar mudah dikenali.
                 </p>
@@ -515,13 +517,13 @@ export function Landing() {
           </div>
         </section>
 
-        <section id="gallery" className="py-20 bg-[#0f1913]">
-          <div className="max-w-6xl mx-auto px-6">
+        <section id="gallery" className="py-12 md:py-20 bg-[#0f1913]">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="flex flex-col gap-3">
-              <p className="text-xs uppercase tracking-[0.45em] text-[#ffd12f]">Visual Lapangan</p>
-              <h2 className="text-3xl text-white font-semibold">Katalog dokumentasi musim 2025</h2>
+              <p className="text-[11px] md:text-xs uppercase tracking-[0.4em] md:tracking-[0.45em] text-[#ffd12f]">Visual Lapangan</p>
+              <h2 className="text-2xl md:text-3xl text-white font-semibold">Katalog dokumentasi musim 2025</h2>
             </div>
-            <div className="mt-10 h-[400px] md:h-[500px]">
+            <div className="mt-7 md:mt-10 h-[260px] sm:h-[320px] md:h-[420px] lg:h-[500px]">
               <ImageCarousel 
                 images={gallery} 
                 autoSlide={true}
@@ -531,26 +533,26 @@ export function Landing() {
           </div>
         </section>
 
-        <section className="py-20 bg-[#f6f2e9] text-[#1f261f]">
-          <div className="max-w-6xl mx-auto px-6">
+        <section className="py-12 md:py-20 bg-[#f6f2e9] text-[#1f261f]">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="text-center max-w-3xl mx-auto">
-              <p className="text-xs uppercase tracking-[0.4em] text-[#6c7f63]">Testimoni</p>
-              <h2 className="mt-3 text-3xl font-semibold">Dipakai tim agrikultur modern</h2>
+              <p className="text-[11px] md:text-xs uppercase tracking-[0.35em] md:tracking-[0.4em] text-[#6c7f63]">Testimoni</p>
+              <h2 className="mt-3 text-2xl md:text-3xl font-semibold">Dipakai tim agrikultur modern</h2>
             </div>
-            <div className="mt-10 grid gap-6 md:grid-cols-3">
+            <div className="mt-8 md:mt-10 grid gap-4 md:gap-6 md:grid-cols-3">
               {testimonials.map((testimonial) => (
-                <div key={testimonial.name} className="rounded-[28px] border border-[#d8d0c0] bg-white p-8 shadow-md">
+                <div key={testimonial.name} className="rounded-[22px] md:rounded-[28px] border border-[#d8d0c0] bg-white p-5 md:p-8 shadow-md">
                   <div className="flex items-center gap-1">
                     {[...Array(testimonial.rating)].map((_, index) => (
                       <Star key={index} className="h-4 w-4 text-[#f3b653] fill-[#f3b653]" />
                     ))}
                   </div>
-                  <p className="mt-5 text-[#4b574d] italic">&ldquo;{testimonial.quote}&rdquo;</p>
-                  <div className="mt-8 flex items-center gap-4">
-                    <img src={testimonial.image} alt={testimonial.name} className="h-14 w-14 rounded-full object-cover" />
+                  <p className="mt-4 md:mt-5 text-sm md:text-base text-[#4b574d] italic">&ldquo;{testimonial.quote}&rdquo;</p>
+                  <div className="mt-6 md:mt-8 flex items-center gap-3 md:gap-4">
+                    <img src={testimonial.image} alt={testimonial.name} className="h-11 w-11 md:h-14 md:w-14 rounded-full object-cover" />
                     <div>
-                      <p className="font-semibold">{testimonial.name}</p>
-                      <p className="text-sm text-[#6c7f63]">{testimonial.role}</p>
+                      <p className="font-semibold text-sm md:text-base">{testimonial.name}</p>
+                      <p className="text-xs md:text-sm text-[#6c7f63]">{testimonial.role}</p>
                     </div>
                   </div>
                 </div>
@@ -559,16 +561,16 @@ export function Landing() {
           </div>
         </section>
 
-        <section className="py-20 bg-[#0f1913]" id="contact">
-          <div className="max-w-6xl mx-auto px-6 grid gap-10 lg:grid-cols-[1.1fr,0.9fr]">
+        <section className="py-12 md:py-20 bg-[#0f1913]" id="contact">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 grid gap-8 md:gap-10 lg:grid-cols-[1.1fr,0.9fr]">
             <div>
-              <p className="text-xs uppercase tracking-[0.4em] text-[#ffd12f]">Hubungi Kami</p>
-              <h2 className="mt-4 text-3xl text-white font-semibold">Kreasi gaya baru untuk operasional Anda</h2>
-              <p className="mt-4 text-[#b8af9f]">
+              <p className="text-[11px] md:text-xs uppercase tracking-[0.35em] md:tracking-[0.4em] text-[#ffd12f]">Hubungi Kami</p>
+              <h2 className="mt-3 md:mt-4 text-2xl md:text-3xl text-white font-semibold">Kreasi gaya baru untuk operasional Anda</h2>
+              <p className="mt-3 md:mt-4 text-sm md:text-base text-[#b8af9f]">
                 Tim kami siap mendampingi aktivasi modul dan mendesain template kerja menyesuaikan identitas
                 koperasi/korporasi Anda.
               </p>
-              <div className="mt-8 space-y-5">
+              <div className="mt-6 md:mt-8 space-y-4 md:space-y-5">
                 {[
                   { icon: MapPin, label: 'Kantor Operasional', value: 'Lumbung Tani, Kab. Bandung, Jawa Barat' },
                   { icon: Phone, label: 'Hotline Konsultan', value: '+62 812-1234-4567' },
@@ -713,8 +715,7 @@ export function Landing() {
         <div className="relative w-full h-full flex items-center justify-center">
           <video 
             key={Date.now()} // Force re-render video
-            autoPlay 
-            muted 
+            autoPlay
             playsInline
             className="max-w-full max-h-full object-contain scale-125"
             onEnded={handleVideoEnd}

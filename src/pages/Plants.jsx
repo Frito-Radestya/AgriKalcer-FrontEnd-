@@ -26,6 +26,7 @@ export function Plants() {
     newLng: 110.3695,
     seedType: '',
     seedAmount: '',
+    notes: '',
   })
 
   const handleSubmit = (e) => {
@@ -41,18 +42,22 @@ export function Plants() {
   }
 
   const handleEdit = (plant) => {
+    // plant di sini sudah dalam bentuk yang dinormalisasi dari DataContext
     setEditingPlant(plant)
     setFormData({
-      plantType: plant.plantType,
-      plantName: plant.plantName,
-      plantDate: plant.plantDate,
-      landId: plant.landId || '',
-      newLandName: '',
+      plantType: plant.plantType || '',
+      plantName: plant.plantName || '',
+      plantDate: plant.plantDate || new Date().toLocaleDateString('en-CA'),
+      // Kita tidak menyimpan landId di objek plant yang dinormalisasi,
+      // jadi user bisa memilih ulang lahannya saat edit bila perlu.
+      landId: '',
+      newLandName: plant.landName ? '' : '',
       newLandArea: '',
-      newLat: plant.newLat || -7.7956,
-      newLng: plant.newLng || 110.3695,
-      seedType: plant.seedType,
-      seedAmount: plant.seedAmount,
+      newLat: -7.7956,
+      newLng: 110.3695,
+      seedType: '',
+      seedAmount: '',
+      notes: plant.notes || '',
     })
     setIsModalOpen(true)
   }
@@ -66,6 +71,10 @@ export function Plants() {
   const handleCloseModal = () => {
     setIsModalOpen(false)
     setEditingPlant(null)
+    handleResetForm()
+  }
+
+  const handleResetForm = () => {
     setFormData({
       plantType: '',
       plantName: '',
@@ -77,6 +86,7 @@ export function Plants() {
       newLng: 110.3695,
       seedType: '',
       seedAmount: '',
+      notes: '',
     })
   }
 
@@ -87,16 +97,17 @@ export function Plants() {
   return (
     <div className="space-y-8 lg:space-y-10">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <div>
-          <h2 className="text-3xl font-extrabold tracking-tight brand-title">Data Tanam</h2>
-          <p className="text-muted-foreground">Kelola data penanaman Anda</p>
+          <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight brand-title">Data Tanam</h2>
+          <p className="text-sm md:text-base text-muted-foreground">Kelola data penanaman Anda</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-1.5 md:gap-2">
           <ExportButtons type="plants" data={plants} />
-          <Button onClick={() => setIsModalOpen(true)} className="brand-btn">
-            <Plus className="h-4 w-4 mr-2" />
-            Tambah Tanaman
+          <Button onClick={() => setIsModalOpen(true)} className="brand-btn text-sm md:text-base">
+            <Plus className="h-4 w-4 mr-1.5 md:mr-2" />
+            <span className="hidden sm:inline">Tambah Tanaman</span>
+            <span className="sm:hidden">Tambah</span>
           </Button>
         </div>
       </div>
@@ -104,14 +115,14 @@ export function Plants() {
       {/* Plants Grid */}
       {plants.length === 0 ? (
         <Card>
-          <CardContent className="py-14 text-center">
-            <p className="text-muted-foreground">
+          <CardContent className="py-8 md:py-14 text-center">
+            <p className="text-sm md:text-base text-muted-foreground">
               Belum ada data tanaman. Klik tombol &quot;Tambah Tanaman&quot; untuk memulai.
             </p>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 lg:gap-6">
           {plants.map((plant) => {
             const plantType = getPlantTypeInfo(plant.plantType)
             const daysUntilHarvest = calculateDaysDifference(
@@ -125,13 +136,13 @@ export function Plants() {
 
             return (
               <Card key={plant.id}>
-                <CardHeader className="brand-header-gradient">
+                <CardHeader className="brand-header-gradient p-3 md:p-4">
                   <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-3xl">{plantType?.icon}</span>
+                    <div className="flex items-center gap-1.5 md:gap-2">
+                      <span className="text-2xl md:text-3xl">{plantType?.icon}</span>
                       <div>
-                        <CardTitle className="text-lg">{plant.plantName}</CardTitle>
-                        <p className="text-sm text-muted-foreground">
+                        <CardTitle className="text-base md:text-lg">{plant.plantName}</CardTitle>
+                        <p className="text-xs md:text-sm text-muted-foreground">
                           {plantType?.name}
                         </p>
                       </div>
@@ -141,59 +152,78 @@ export function Plants() {
                     </Badge>
                   </div>
                 </CardHeader>
-                <CardContent className="pt-2 space-y-4">
+                <CardContent className="pt-2 space-y-3 md:space-y-4">
                   <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-sm">
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">Nama Lahan:</span>
-                      <span>{plant.landName}</span>
+                    <div className="flex items-center gap-1.5 text-xs md:text-sm">
+                      <MapPin className="h-3.5 w-3.5 md:h-4 md:w-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">Lahan:</span>
+                      <span className="truncate">{plant.landName || 'Tidak ada lahan'}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm ml-6">
-                      <span className="text-muted-foreground">Luas Lahan:</span>
-                      <span>{plant.landArea} m²</span>
+                    <div className="flex items-center gap-1.5 text-xs md:text-sm ml-5 md:ml-6">
+                      <span className="text-muted-foreground">Luas:</span>
+                      <span>{plant.landArea || 'Tidak ada data'} m²</span>
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-2 text-sm">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex items-center gap-1.5 text-xs md:text-sm">
+                    <Calendar className="h-3.5 w-3.5 md:h-4 md:w-4 text-muted-foreground" />
                     <span>Ditanam: {formatDate(plant.plantDate)}</span>
                   </div>
 
-                  <div className="bg-muted p-3 rounded-lg space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Hari ke:</span>
-                      <span className="font-medium">{daysSincePlanting}</span>
+                  {plant.status === 'harvested' ? (
+                    // Tampilan khusus jika tanaman sudah dipanen
+                    <div className="bg-muted p-2 md:p-3 rounded-lg space-y-1.5 md:space-y-2">
+                      <div className="flex justify-between text-xs md:text-sm">
+                        <span className="text-muted-foreground">Status:</span>
+                        <span className="font-medium">Sudah dipanen</span>
+                      </div>
+                      {plant.notes && (
+                        <div className="flex justify-between text-xs md:text-sm">
+                          <span className="text-muted-foreground">Catatan:</span>
+                          <span className="font-medium truncate ml-2">{plant.notes}</span>
+                        </div>
+                      )}
                     </div>
-                    {plant.status === 'active' && (
-                      <div className="flex justify-between text-sm">
+                  ) : (
+                    // Tampilan default untuk tanaman yang masih aktif
+                    <div className="bg-muted p-2 md:p-3 rounded-lg space-y-1.5 md:space-y-2">
+                      <div className="flex justify-between text-xs md:text-sm">
+                        <span className="text-muted-foreground">Hari ke:</span>
+                        <span className="font-medium">{daysSincePlanting}</span>
+                      </div>
+                      <div className="flex justify-between text-xs md:text-sm">
                         <span className="text-muted-foreground">Panen dalam:</span>
                         <span className="font-medium">
                           {daysUntilHarvest > 0 ? `${daysUntilHarvest} hari` : 'Siap panen'}
                         </span>
                       </div>
-                    )}
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Bibit:</span>
-                      <span className="font-medium">{plant.seedAmount || ''} {plant.seedType || ''}</span>
+                      <div className="flex justify-between text-xs md:text-sm">
+                        <span className="text-muted-foreground">Bibit:</span>
+                        <span className="font-medium truncate ml-2">{plant.notes || 'Tidak ada catatan'}</span>
+                      </div>
                     </div>
-                  </div>
+                  )}
 
-                  <div className="flex gap-2 pt-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => handleEdit(plant)}
-                    >
-                      <Edit className="h-4 w-4 mr-1" />
-                      Edit
-                    </Button>
+                  <div className="flex gap-1.5 md:gap-2 pt-2">
+                    {plant.status === 'active' && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 text-xs md:text-sm"
+                        onClick={() => handleEdit(plant)}
+                      >
+                        <Edit className="h-3.5 w-3.5 md:h-4 md:w-4 mr-1" />
+                        <span className="hidden sm:inline">Edit</span>
+                        <span className="sm:hidden">Ubah</span>
+                      </Button>
+                    )}
                     <Button
                       variant="destructive"
                       size="sm"
+                      className="px-2 md:px-3"
                       onClick={() => handleDelete(plant.id)}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-3.5 w-3.5 md:h-4 md:w-4" />
                     </Button>
                   </div>
                 </CardContent>
@@ -261,7 +291,7 @@ export function Plants() {
                 <option value="">Pilih Lahan</option>
                 {lands.map((land) => (
                   <option key={land.id} value={land.id}>
-                    {land.landName} - Luas: {land.landArea} m²
+                    {land.landName || land.name} - Luas: {(land.landArea ?? land.area_size ?? land.area) || 0} m²
                   </option>
                 ))}
               </Select>
@@ -324,6 +354,16 @@ export function Plants() {
                 required
               />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="notes">Catatan</Label>
+            <Input
+              id="notes"
+              placeholder="Catatan tambahan (opsional)"
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+            />
           </div>
 
           <div className="flex gap-2 pt-4">

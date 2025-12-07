@@ -57,21 +57,21 @@ export function Login() {
           />
           <div className="absolute inset-0 bg-gradient-to-br from-[#08130d] via-[#0b130f]/90 to-[#1c2f22]/85 rounded-l-3xl" />
         </div>
-        <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-16">
+        <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-8 sm:py-12 md:py-16">
           <Card className="w-full max-w-md border border-white/10 bg-white/5 backdrop-blur-2xl text-white shadow-[0_25px_60px_rgba(0,0,0,0.35)]">
-            <CardHeader className="space-y-3 pb-6">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#ffe457]/20">
-                <Check className="h-7 w-7 text-[#ffe457]" />
+            <CardHeader className="space-y-3 pb-4 md:pb-6">
+              <div className="mx-auto flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-full bg-[#ffe457]/20">
+                <Check className="h-6 w-6 md:h-7 md:w-7 text-[#ffe457]" />
               </div>
-              <CardTitle className="text-2xl font-semibold text-center">Selamat Datang Kembali!</CardTitle>
-              <CardDescription className="text-center text-[#d3c9b6]">
+              <CardTitle className="text-xl md:text-2xl font-semibold text-center">Selamat Datang Kembali!</CardTitle>
+              <CardDescription className="text-center text-[#d3c9b6] text-sm md:text-base">
                 Login berhasil. Selamat datang di Lumbung Tani Platform.
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-0">
               <Button
                 onClick={() => navigate('/dashboard')}
-                className="w-full h-12 rounded-full bg-[#ffe457] text-[#1b2c1f] hover:bg-[#ffd12f] font-semibold"
+                className="w-full h-10 md:h-12 rounded-full bg-[#ffe457] text-[#1b2c1f] hover:bg-[#ffd12f] font-semibold text-sm md:text-base"
               >
                 Masuk ke Dashboard
               </Button>

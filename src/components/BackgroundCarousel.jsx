@@ -38,7 +38,7 @@ export function BackgroundCarousel({ images, autoSlide = true, slideInterval = 5
               <img 
                 src={image} 
                 alt={`Background ${index + 1}`} 
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover object-[center_top] md:object-center"
               />
             </div>
           ))}

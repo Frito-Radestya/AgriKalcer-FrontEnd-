@@ -7,6 +7,18 @@ export function MapDisplay({ lands, height = '400px', onLandSelect = null }) {
   const [error, setError] = useState(null)
   const [retryCount, setRetryCount] = useState(0)
   const [useFallback, setUseFallback] = useState(false)
+  const [computedHeight, setComputedHeight] = useState(height)
+
+  useEffect(() => {
+    const w = typeof window !== 'undefined' ? window.innerWidth : 1024
+    if (w < 640) {
+      setComputedHeight('260px')
+    } else if (w < 1024) {
+      setComputedHeight(height || '360px')
+    } else {
+      setComputedHeight(height || '420px')
+    }
+  }, [height])
   const markers = useRef([])
 
   useEffect(() => {
@@ -120,7 +132,7 @@ export function MapDisplay({ lands, height = '400px', onLandSelect = null }) {
         <div 
           style={{ 
             width: '100%', 
-            height: height,
+            height: computedHeight,
             borderRadius: '12px',
             overflow: 'hidden',
             backgroundColor: '#f3f4f6',
@@ -183,7 +195,7 @@ export function MapDisplay({ lands, height = '400px', onLandSelect = null }) {
         <div 
           style={{ 
             width: '100%', 
-            height: height,
+            height: computedHeight,
             borderRadius: '12px',
             overflow: 'hidden',
             backgroundColor: '#f3f4f6',
@@ -228,22 +240,23 @@ export function MapDisplay({ lands, height = '400px', onLandSelect = null }) {
     )
   }
 
+  // Normal map view
   return (
     <div className="relative">
       <div 
         ref={mapContainer} 
         style={{ 
           width: '100%', 
-          height: height,
+          height: computedHeight,
           borderRadius: '12px',
           overflow: 'hidden'
         }} 
       />
-      {!mapLoaded && !error && (
+      {!mapLoaded && !error && !useFallback && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-lg">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
-            <p className="text-sm text-gray-600">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto mb-1"></div>
+            <p className="text-xs text-gray-600">
               {retryCount > 0 ? `Memuat peta... (${retryCount}/10)` : 'Memuat peta...'}
             </p>
           </div>

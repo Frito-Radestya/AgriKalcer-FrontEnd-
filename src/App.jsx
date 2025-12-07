@@ -6,7 +6,7 @@ import { Layout } from './components/Layout'
 import { Landing } from './pages/Landing'
 import { Login } from './pages/Login'
 import { Register } from './pages/Register'
-import { ForgotPassword } from './pages/ForgotPassword'
+import ForgotPasswordSimple from './pages/ForgotPasswordSimple'
 import { Dashboard } from './pages/Dashboard'
 import { Plants } from './pages/Plants'
 import { Maintenance } from './pages/Maintenance'
@@ -16,6 +16,8 @@ import { Analytics } from './pages/Analytics'
 import { Lands } from './pages/Lands'
 import { Notifications } from './pages/Notifications'
 import AIChat from './pages/AIChat'
+import EmailSettings from './pages/admin/EmailSettings'
+import VideoTani from '../assets/VideoTani.mp4'
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth()
@@ -24,6 +26,8 @@ function ProtectedRoute({ children }) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#0b130f] text-[#f7f3eb]">
         <div className="text-center">
+          {/* Audio dari VideoTani akan diputar saat loading */}
+          <audio src={VideoTani} autoPlay />
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#ffe457] mx-auto mb-4"></div>
           <p className="text-[#d3c9b6] tracking-[0.35em] uppercase text-xs">Memuat</p>
         </div>
@@ -40,8 +44,8 @@ function AppRoutes() {
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password" element={<ForgotPassword />} />
+      <Route path="/forgot-password" element={<ForgotPasswordSimple />} />
+      <Route path="/reset-password" element={<ForgotPasswordSimple />} />
       <Route
         path="/dashboard"
         element={
@@ -128,6 +132,16 @@ function AppRoutes() {
           <ProtectedRoute>
             <Layout>
               <AIChat />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/email-settings"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <EmailSettings />
             </Layout>
           </ProtectedRoute>
         }

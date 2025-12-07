@@ -15,6 +15,133 @@ export function DataProvider({ children }) {
   const [notifications, setNotifications] = useState([])
   const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4001'
 
+  // Helper function to refresh all data
+  const refreshAllData = async () => {
+    const token = storage.get('TOKEN')
+    if (!token) return
+    
+    try {
+      // Fetch all data from API
+      const [maintenanceRes, harvestsRes, financesRes, notificationsRes, plantsRes] = await Promise.all([
+        fetch(`${API_BASE}/api/maintenance`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        fetch(`${API_BASE}/api/harvests`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        fetch(`${API_BASE}/api/finances`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        fetch(`${API_BASE}/api/notifications`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        fetch(`${API_BASE}/api/plants`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ])
+
+      // Handle maintenance
+      if (maintenanceRes.ok) {
+        const response = await maintenanceRes.json()
+        const data = Array.isArray(response) ? response : (response.data || [])
+        setMaintenance(data)
+      }
+
+      // Handle harvests
+      if (harvestsRes.ok) {
+        const response = await harvestsRes.json()
+        const data = Array.isArray(response) ? response : (response.data || [])
+        setHarvests(data)
+      }
+
+      // Handle finances
+      if (financesRes.ok) {
+        const response = await financesRes.json()
+        const data = Array.isArray(response) ? response : (response.data || [])
+        setFinances(data)
+      }
+
+      // Handle notifications
+      if (notificationsRes.ok) {
+        const response = await notificationsRes.json()
+        const data = Array.isArray(response) ? response : (response.data || [])
+        setNotifications(data)
+      }
+
+      // Handle plants
+      if (plantsRes.ok) {
+        const response = await plantsRes.json()
+        const data = Array.isArray(response) ? response : (response.data || [])
+        const mapped = data.map(p => {
+          const typeById = PLANT_TYPES.find(pt => pt.id === p.plant_type?.id)
+          const typeByName = p.plant_type?.name ? PLANT_TYPES.find(t => t.name.toLowerCase() === p.plant_type.name.toLowerCase()) : null
+          const resolvedType = typeById || typeByName || null
+          // Parse notes untuk seedType/seedAmount
+          let seedType = ''
+          let seedAmount = ''
+          if (p.notes) {
+            const parts = p.notes.split(' ').filter(Boolean)
+            if (parts.length >= 2) {
+              seedAmount = parts[0]
+              seedType = parts.slice(1).join(' ')
+            } else if (parts.length === 1) {
+              if (/^\d/.test(parts[0])) {
+                seedAmount = parts[0]
+              } else {
+                seedType = parts[0]
+              }
+            }
+          }
+          return {
+            id: p.id,
+            plantType: resolvedType?.id || '',
+            plantName: p.name,
+            plantDate: p.planting_date ? String(p.planting_date).slice(0,10) : '',
+            landArea: p.land?.area_size ?? '',
+            landName: p.land?.name ?? '',
+            seedType,
+            seedAmount,
+            status: p.status || 'active',
+            estimatedHarvestDate: p.estimated_harvest_date 
+              ? String(p.estimated_harvest_date).slice(0,10) 
+              : (() => {
+                if (!resolvedType?.harvestDays) return ''
+                const plantDate = new Date(p.planting_date)
+                const harvestDate = new Date(plantDate)
+                harvestDate.setDate(harvestDate.getDate() + resolvedType.harvestDays)
+                return harvestDate.toISOString().slice(0,10)
+              })(),
+            createdAt: p.created_at,
+          }
+        })
+        setPlants(mapped)
+      }
+
+      // Refresh lands
+      const landsRes = await fetch(`${API_BASE}/api/lands`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (landsRes.ok) {
+        const response = await landsRes.json()
+        const data = Array.isArray(response) ? response : (response.data || [])
+        const mapped = data.map((l) => ({
+          id: l.id,
+          landName: l.name,
+          landArea: l.area_size ?? '',
+          location: l.location ?? '',
+          latitude: l.latitude,
+          longitude: l.longitude,
+          soilType: l.soil_type,
+          notes: l.notes,
+          createdAt: l.created_at,
+        }))
+        setLands(mapped)
+      }
+    } catch (error) {
+      console.error('Error refreshing data:', error)
+    }
+  }
+
   // Helper function to refresh notifications
   const refreshNotifications = async () => {
     const token = storage.get('TOKEN')
@@ -110,9 +237,11 @@ export function DataProvider({ children }) {
           }
 
           // Handle plants
+          console.log('DEBUG - Plants response status:', plantsRes.status)
           if (plantsRes.ok) {
             const response = await plantsRes.json()
             const data = Array.isArray(response) ? response : (response.data || [])
+            console.log('DEBUG - Plants data received:', data)
             const mapped = data.map(p => {
               const typeById = PLANT_TYPES.find(pt => pt.id === p.plant_type?.id)
               const typeByName = p.plant_type?.name ? PLANT_TYPES.find(t => t.name.toLowerCase() === p.plant_type.name.toLowerCase()) : null
@@ -153,10 +282,12 @@ export function DataProvider({ children }) {
                     return harvestDate.toISOString().slice(0,10)
                   })(),
                 createdAt: p.created_at,
+                notes: p.notes || '',
               }
             })
             setPlants(mapped)
           } else {
+            console.error('DEBUG - Plants failed with status:', plantsRes.status)
             setPlants([])
           }
         } catch (error) {
@@ -300,7 +431,7 @@ export function DataProvider({ children }) {
         name: plant.plantName,
         planting_date: plant.plantDate,
         status: plant.status || 'active',
-        notes: [plant.seedAmount, plant.seedType].filter(Boolean).join(' '),
+        notes: plant.notes || '',
         land_id: landIdFromName || plant.landId,
         plant_type_id: plantTypeIdFromName,
       }),
@@ -324,21 +455,19 @@ export function DataProvider({ children }) {
       ? new Date(created.estimated_harvest_date)
       : addDays(plantDate, resolvedType?.harvestDays ?? 60)
     
-    // Use the data we have instead of relying on backend response
-    const resolvedLandName = plant.newLandName || (lands.find(l => l.id === landIdFromName)?.name || lands.find(l => l.id === landIdFromName)?.landName) || ''
-    
+    // Use the data from backend response
     const mapped = {
       id: created.id,
       plantType: plantTypeId,
-      plantName: plant.plantName,
-      plantDate,
+      plantName: created.name,
+      plantDate: created.planting_date,
       landId: created.land_id,
-      landName: resolvedLandName,
-      landArea: lands.find(l => l.id === landIdFromName)?.area_size || lands.find(l => l.id === landIdFromName)?.landArea || '',
-      seedType: plant.seedType || '',
-      seedAmount: plant.seedAmount || '',
+      landName: created.land?.name || '',
+      landArea: created.land?.area_size || '',
+      seedType: '',
+      seedAmount: '',
       status: created.status || 'active',
-      estimatedHarvestDate,
+      estimatedHarvestDate: created.estimated_harvest_date,
       notes: created.notes || '',
     }
     
@@ -563,6 +692,7 @@ export function DataProvider({ children }) {
           plantId: harvestData.plantId,
           date: harvestData.date,
           amount: harvestData.amount,
+          unit: harvestData.unit,
           pricePerKg: harvestData.pricePerKg,
           quality: harvestData.quality,
           notes: harvestData.notes,
@@ -578,26 +708,7 @@ export function DataProvider({ children }) {
       await updatePlant(harvestData.plantId, { status: 'harvested' })
       
       // Refresh all data to ensure UI is updated
-      const plantsRes = await fetch(`${API_BASE}/api/plants`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      if (plantsRes.ok) {
-        const plantsResponse = await plantsRes.json()
-        const plantsData = Array.isArray(plantsResponse) ? plantsResponse : (plantsResponse.data || [])
-        console.log('DEBUG - Refreshed plants data:', plantsData)
-        setPlants(plantsData)
-      }
-      
-      // Also refresh harvests to get latest data with plant info
-      const harvestsRes = await fetch(`${API_BASE}/api/harvests`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      if (harvestsRes.ok) {
-        const harvestsResponse = await harvestsRes.json()
-        const harvestsData = Array.isArray(harvestsResponse) ? harvestsResponse : (harvestsResponse.data || [])
-        console.log('DEBUG - Refreshed harvests data:', harvestsData)
-        setHarvests(harvestsData)
-      }
+      await refreshAllData()
       
       // Refresh notifications after adding harvest to get new harvest notifications
       await refreshNotifications()
@@ -633,6 +744,7 @@ export function DataProvider({ children }) {
           plantId: updates.plantId,
           date: updates.date,
           amount: updates.amount,
+          unit: updates.unit,
           pricePerKg: updates.pricePerKg,
           quality: updates.quality,
           notes: updates.notes,
@@ -988,33 +1100,37 @@ export function DataProvider({ children }) {
   }
 
   // Ensure all values are arrays (safety check)
-  const value = {
-    plants: Array.isArray(plants) ? plants : [],
-    addPlant,
-    updatePlant,
-    deletePlant,
-    maintenance: Array.isArray(maintenance) ? maintenance : [],
-    addMaintenance,
-    updateMaintenance,
-    deleteMaintenance,
-    harvests: Array.isArray(harvests) ? harvests : [],
-    addHarvest,
-    updateHarvest,
-    deleteHarvest,
-    finances: Array.isArray(finances) ? finances : [],
-    addFinance,
-    updateFinance,
-    deleteFinance,
-    lands: Array.isArray(lands) ? lands : [],
-    addLand,
-    updateLand,
-    deleteLand,
-    notifications: Array.isArray(notifications) ? notifications : [],
-    addNotification,
-    markNotificationAsRead,
-    markAllNotificationsAsRead,
-    deleteNotification,
-  }
-
-  return <DataContext.Provider value={value}>{children}</DataContext.Provider>
+  return (
+    <DataContext.Provider value={{
+      plants,
+      maintenance,
+      harvests,
+      finances,
+      lands,
+      notifications,
+      addPlant,
+      updatePlant,
+      deletePlant,
+      addMaintenance,
+      updateMaintenance,
+      deleteMaintenance,
+      addHarvest,
+      updateHarvest,
+      deleteHarvest,
+      addFinance,
+      updateFinance,
+      deleteFinance,
+      addLand,
+      updateLand,
+      deleteLand,
+      addNotification,
+      markNotificationAsRead,
+      markAllNotificationsAsRead,
+      deleteNotification,
+      refreshAllData,
+      refreshNotifications,
+    }}>
+      {children}
+    </DataContext.Provider>
+  )
 }

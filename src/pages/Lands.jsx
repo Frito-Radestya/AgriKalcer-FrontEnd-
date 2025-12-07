@@ -7,10 +7,10 @@ import { Modal } from '@/components/ui/Modal'
 import { Badge } from '@/components/ui/Badge'
 import { MapDisplay } from '@/components/MapDisplay'
 import { MapPicker } from '@/components/MapPicker'
-import { MapPin, Plus, Edit, Trash2, Map, Navigation } from 'lucide-react'
+import { MapPin, Plus, Edit, Trash2, Map, Navigation, RefreshCw } from 'lucide-react'
 
 export function Lands() {
-  const { lands, addLand, updateLand, deleteLand, plants } = useData()
+  const { lands, addLand, updateLand, deleteLand, plants, refreshAllData } = useData()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingLand, setEditingLand] = useState(null)
   const [showMapView, setShowMapView] = useState(false)
@@ -68,6 +68,13 @@ export function Lands() {
     
     return () => clearTimeout(timeoutId)
   }, [formData.location])
+
+  // Tampilkan peta secara default di mobile
+  useEffect(() => {
+    if (window.innerWidth < 768) {
+      setShowMapView(true)
+    }
+  }, [])
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -131,6 +138,33 @@ export function Lands() {
     }
   }
 
+  const handleUseCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      alert('Browser tidak mendukung fitur lokasi otomatis')
+      return
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords
+        setFormData((prev) => ({
+          ...prev,
+          latitude,
+          longitude,
+        }))
+      },
+      (error) => {
+        console.error('Gagal mendapatkan lokasi pengguna:', error)
+        alert('Gagal mendapatkan lokasi Anda. Pastikan izin lokasi sudah diaktifkan.')
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      }
+    )
+  }
+
   // Get plant count per land
   const getPlantCount = (landName) => {
     return plants.filter(p => p.landName === landName && p.status === 'active').length
@@ -163,37 +197,50 @@ export function Lands() {
   }
 
   return (
-    <div className="space-y-8 lg:space-y-10">
+    <div className="space-y-4 md:space-y-6 lg:space-y-8">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
         <div>
-          <h2 className="text-3xl font-extrabold tracking-tight brand-title">Lahan & Lokasi</h2>
-          <p className="text-muted-foreground">Kelola data lahan pertanian</p>
+          <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight brand-title">Lahan & Lokasi</h2>
+          <p className="text-sm md:text-base text-muted-foreground">Kelola data lahan pertanian</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-1.5 md:gap-2">
+          <Button 
+            variant="outline" 
+            onClick={refreshAllData}
+            className="flex items-center gap-1.5 text-xs md:text-sm"
+            title="Refresh semua data"
+          >
+            <RefreshCw className="h-3.5 w-3.5 md:h-4 md:w-4" />
+            <span className="hidden sm:inline">Refresh</span>
+            <span className="sm:hidden">Ref</span>
+          </Button>
           {lands.length > 0 && (
             <>
               <Button 
                 variant="outline" 
                 onClick={() => setShowMapView(!showMapView)}
-                className="flex items-center gap-2"
+                className="flex items-center gap-1.5 text-xs md:text-sm"
               >
-                <Map className="h-4 w-4" />
-                {showMapView ? 'Tampil Grid' : 'Tampil Peta'}
+                <Map className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                <span className="hidden sm:inline">{showMapView ? 'Tampil Grid' : 'Tampil Peta'}</span>
+                <span className="sm:hidden">{showMapView ? 'Grid' : 'Peta'}</span>
               </Button>
               <Button 
                 variant="outline" 
                 onClick={updateAllLandsArea}
-                className="flex items-center gap-2"
+                className="flex items-center gap-1.5 text-xs md:text-sm"
               >
-                <Plus className="h-4 w-4" />
-                Update Luas Lahan
+                <Plus className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                <span className="hidden sm:inline">Update Luas</span>
+                <span className="sm:hidden">Update</span>
               </Button>
             </>
           )}
-          <Button onClick={() => setIsModalOpen(true)} className="brand-btn">
-            <Plus className="h-4 w-4 mr-2" />
-            Tambah Lahan
+          <Button onClick={() => setIsModalOpen(true)} className="brand-btn text-sm md:text-base">
+            <Plus className="h-4 w-4 mr-1.5 md:mr-2" />
+            <span className="hidden sm:inline">Tambah Lahan</span>
+            <span className="sm:hidden">Tambah</span>
           </Button>
         </div>
       </div>
@@ -201,8 +248,8 @@ export function Lands() {
       {/* Lands Display */}
       {lands.length === 0 ? (
         <Card>
-          <CardContent className="py-14 text-center">
-            <p className="text-muted-foreground">
+          <CardContent className="py-8 md:py-14 text-center">
+            <p className="text-sm md:text-base text-muted-foreground">
               Belum ada data lahan. Klik tombol &quot;Tambah Lahan&quot; untuk memulai.
             </p>
           </CardContent>
@@ -211,20 +258,20 @@ export function Lands() {
         <>
           {showMapView ? (
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MapPin className="h-5 w-5" />
-                  Peta Lokasi Lahan
+              <CardHeader className="p-3 md:p-4">
+                <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                  <MapPin className="h-4 w-4 md:h-5 md:w-5" />
+                  <span className="truncate">Peta Lokasi Lahan</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-3 md:p-4 pt-0">
                 <MapDisplay 
                   lands={lands.filter(land => land.latitude && land.longitude)} 
-                  height="500px"
+                  height="360px"
                 />
                 {lands.filter(land => land.latitude && land.longitude).length === 0 && (
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground">
+                  <div className="text-center py-4 md:py-8">
+                    <p className="text-sm md:text-base text-muted-foreground">
                       Belum ada lahan dengan koordinat GPS. Tambahkan koordinat pada data lahan untuk melihat lokasi di peta.
                     </p>
                   </div>
@@ -232,18 +279,18 @@ export function Lands() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 lg:gap-6">
               {lands.map((land) => {
                 const activePlants = getPlantCount(land.landName)
                 
                 return (
                   <Card key={land.id}>
-                    <CardHeader className="brand-header-gradient">
+                    <CardHeader className="brand-header-gradient p-3 md:p-4">
                       <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-2">
-                          <MapPin className="h-5 w-5 text-primary" />
-                          <div>
-                            <CardTitle className="text-lg">{land.landName}{land.landArea ? ` (${land.landArea} m²)` : ''}</CardTitle>
+                        <div className="flex items-center gap-1.5 md:gap-2">
+                          <MapPin className="h-4 w-4 md:h-5 md:w-5 text-primary" />
+                          <div className="min-w-0 flex-1">
+                            <CardTitle className="text-sm md:text-base truncate">{land.landName}{land.landArea ? ` (${land.landArea} m²)` : ''}</CardTitle>
                           </div>
                         </div>
                         {activePlants > 0 && (
@@ -377,6 +424,15 @@ export function Lands() {
             <p className="text-xs text-gray-500">
               Koordinat otomatis dari alamat. Seret marker untuk menyesuaikan lokasi jika perlu.
             </p>
+            <Button
+              type="button"
+              variant="outline"
+              className="mt-1 flex items-center gap-1.5 text-xs md:text-sm"
+              onClick={handleUseCurrentLocation}
+            >
+              <MapPin className="h-3.5 w-3.5 md:h-4 md:w-4" />
+              Gunakan Lokasi Saya
+            </Button>
             <MapPicker
               value={{ lat: parseFloat(formData.latitude) || -7.7956, lng: parseFloat(formData.longitude) || 110.3695 }}
               onChange={(pos) => setFormData({ ...formData, latitude: pos.lat, longitude: pos.lng })}

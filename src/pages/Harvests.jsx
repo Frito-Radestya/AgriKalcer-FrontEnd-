@@ -67,23 +67,20 @@ export function Harvests() {
   }
 
   const getRevenue = (harvest) => {
-    const revenue = safeParseNumber(harvest.revenue, null)
-    if (revenue !== null) {
-      return revenue
-    }
-    
+    // Selalu hitung ulang pendapatan di sisi frontend agar konsisten,
+    // dan memperbaiki data lama yang kolom revenue-nya terlanjur salah.
     const amount = safeParseNumber(harvest.amount)
     const price = safeParseNumber(harvest.pricePerKg)
     const unit = harvest.unit || 'kg'
-    
-    // Convert amount to kg based on unit
+
+    // Konversi jumlah ke kilogram sesuai satuan
     let amountInKg = amount
     if (unit === 'ton') {
       amountInKg = amount * 1000 // 1 ton = 1000 kg
     } else if (unit === 'kuintal') {
       amountInKg = amount * 100 // 1 kuintal = 100 kg
     }
-    
+
     return Number((amountInKg * price).toFixed(2))
   }
 
@@ -151,7 +148,19 @@ export function Harvests() {
   }
 
   // Calculate totals only when data is loaded
-  const totalAmount = harvests.reduce((sum, h) => sum + safeParseNumber(h.amount), 0)
+  // Total hasil dikonversi ke kg supaya konsisten meskipun input pakai ton/kuintal
+  const totalAmount = harvests.reduce((sum, h) => {
+    const amount = safeParseNumber(h.amount)
+    const unit = h.unit || 'kg'
+    let amountInKg = amount
+    if (unit === 'ton') {
+      amountInKg = amount * 1000
+    } else if (unit === 'kuintal') {
+      amountInKg = amount * 100
+    }
+    return sum + amountInKg
+  }, 0)
+
   const totalRevenue = harvests.reduce((sum, h) => sum + getRevenue(h), 0)
   const productivityData = isDataLoaded ? harvests.reduce((acc, harvest) => {
     const plant = plants.find(p => p.id === harvest.plantId)
@@ -163,30 +172,31 @@ export function Harvests() {
   const averageProductivity = harvests.length ? totalProductivity / harvests.length : 0
 
   return (
-    <div className="space-y-8 lg:space-y-10">
+    <div className="space-y-4 md:space-y-6 lg:space-y-8">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <div>
-          <h2 className="text-3xl font-extrabold tracking-tight brand-title">Data Panen</h2>
-          <p className="text-muted-foreground">Catat hasil panen dan pendapatan</p>
+          <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight brand-title">Data Panen</h2>
+          <p className="text-sm md:text-base text-muted-foreground">Catat hasil panen dan pendapatan</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-1.5 md:gap-2">
           <ExportButtons type="harvests" data={harvests} />
-          <Button onClick={() => setIsModalOpen(true)} disabled={activePlants.length === 0} className="brand-btn">
-            <Plus className="h-4 w-4 mr-2" />
-            Tambah Panen
+          <Button onClick={() => setIsModalOpen(true)} disabled={activePlants.length === 0} className="brand-btn text-sm md:text-base">
+            <Plus className="h-4 w-4 mr-1.5 md:mr-2" />
+            <span className="hidden sm:inline">Tambah Panen</span>
+            <span className="sm:hidden">Tambah</span>
           </Button>
         </div>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6">
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-3 md:p-4 lg:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Panen</p>
-                <p className="text-2xl font-bold mt-1">{harvests.length}</p>
+                <p className="text-xs md:text-sm text-muted-foreground">Total Panen</p>
+                <p className="text-lg md:text-2xl font-bold mt-1">{harvests.length}</p>
               </div>
               <div className="bg-green-100 dark:bg-green-900 p-3 rounded-lg">
                 <Calendar className="h-6 w-6 text-green-700" />
@@ -196,42 +206,42 @@ export function Harvests() {
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-3 md:p-4 lg:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Hasil</p>
-                <p className="text-2xl font-bold mt-1">{totalAmount.toFixed(1)} kg</p>
+                <p className="text-xs md:text-sm text-muted-foreground">Total Hasil</p>
+                <p className="text-lg md:text-2xl font-bold mt-1">{totalAmount.toFixed(1)} kg</p>
               </div>
-              <div className="bg-yellow-100 dark:bg-yellow-900 p-3 rounded-lg">
-                <TrendingUp className="h-6 w-6 text-green-700" />
+              <div className="bg-yellow-100 dark:bg-yellow-900 p-2 md:p-3 rounded-lg">
+                <TrendingUp className="h-5 w-5 md:h-6 md:w-6 text-green-700" />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-3 md:p-4 lg:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Produktivitas Rata-rata</p>
-                <p className="text-2xl font-bold mt-1">{averageProductivity.toFixed(2)} kg/m²</p>
+                <p className="text-xs md:text-sm text-muted-foreground">Produktivitas Rata-rata</p>
+                <p className="text-lg md:text-2xl font-bold mt-1">{averageProductivity.toFixed(2)} kg/m²</p>
               </div>
-              <div className="bg-green-100 dark:bg-green-900 p-3 rounded-lg">
-                <Target className="h-6 w-6 text-green-700" />
+              <div className="bg-green-100 dark:bg-green-900 p-2 md:p-3 rounded-lg">
+                <Target className="h-5 w-5 md:h-6 md:w-6 text-green-700" />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-3 md:p-4 lg:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Pendapatan</p>
-                <p className="text-2xl font-bold mt-1">{formatCurrency(totalRevenue)}</p>
+                <p className="text-xs md:text-sm text-muted-foreground">Total Pendapatan</p>
+                <p className="text-lg md:text-2xl font-bold mt-1">{formatCurrency(totalRevenue)}</p>
               </div>
-              <div className="bg-yellow-100 dark:bg-yellow-900 p-3 rounded-lg">
-                <DollarSign className="h-6 w-6 text-green-700" />
+              <div className="bg-yellow-100 dark:bg-yellow-900 p-2 md:p-3 rounded-lg">
+                <DollarSign className="h-5 w-5 md:h-6 md:w-6 text-green-700" />
               </div>
             </div>
           </CardContent>
@@ -240,9 +250,9 @@ export function Harvests() {
 
       {activePlants.length === 0 && (
         <Card>
-          <CardContent className="py-14 text-center">
-            <p className="text-muted-foreground">
-              Tidak ada tanaman aktif. Tambahkan tanaman terlebih dahulu.
+          <CardContent className="py-8 md:py-14 text-center">
+            <p className="text-sm md:text-base text-muted-foreground">
+              Tidak ada tanaman aktif. Tambah tanaman terlebih dahulu sebelum mencatat panen.
             </p>
           </CardContent>
         </Card>
@@ -274,19 +284,21 @@ export function Harvests() {
                 return (
                   <div
                     key={harvest.id}
-                    className="flex items-start gap-4 p-4 bg-muted rounded-lg"
+                    className="flex flex-col sm:flex-row items-stretch sm:items-start gap-2.5 md:gap-4 p-3 md:p-4 bg-muted rounded-lg"
                   >
-                    <div className="flex-shrink-0">
-                      <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
-                        <span className="text-2xl">
+                    <div className="flex flex-row sm:flex-col items-center gap-2 sm:gap-3 flex-shrink-0">
+                      <div className="p-1.5 md:p-2 bg-green-100 dark:bg-green-900 rounded-lg">
+                        <span className="text-xl md:text-2xl">
                           {plantTypeInfo?.icon || '🌱'}
                         </span>
                       </div>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h4 className="font-medium">{harvest.plantName}</h4>
-                        <Badge variant="secondary" className="text-xs">
+                      <div className="flex flex-wrap items-center gap-1.5 md:gap-2 mb-1.5 md:mb-2">
+                        <h4 className="font-medium text-sm md:text-base truncate max-w-[140px] md:max-w-none">
+                          {harvest.plantName}
+                        </h4>
+                        <Badge variant="secondary" className="text-[10px] md:text-xs">
                           {formatDate(harvest.date)}
                         </Badge>
                         <Badge 
@@ -294,34 +306,34 @@ export function Harvests() {
                             harvest.quality === 'excellent' ? 'success' :
                             harvest.quality === 'good' ? 'info' : 'warning'
                           }
-                          className="text-xs"
+                          className="text-[10px] md:text-xs"
                         >
                           {harvest.quality === 'excellent' ? 'Sangat Baik' :
                            harvest.quality === 'good' ? 'Baik' : 'Cukup'}
                         </Badge>
                       </div>
                       
-                      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-4 text-xs md:text-sm">
                         <div>
                           <span className="text-muted-foreground">Hasil Panen</span>
-                          <p className="font-medium">{harvest.amount} {harvest.unit}</p>
+                          <p className="font-medium mt-0.5">{harvest.amount} {harvest.unit}</p>
                         </div>
                         <div>
                           <span className="text-muted-foreground">Harga/kg</span>
-                          <p className="font-medium">{formatCurrency(harvest.pricePerKg)}</p>
+                          <p className="font-medium mt-0.5">{formatCurrency(harvest.pricePerKg)}</p>
                         </div>
                         <div>
                           <span className="text-muted-foreground">Total Pendapatan</span>
-                          <p className="font-medium text-green-600">
+                          <p className="font-medium text-green-600 mt-0.5">
                             {formatCurrency(getRevenue(harvest))}
                           </p>
                         </div>
                         <div>
                           <span className="text-muted-foreground">Produktivitas</span>
-                          <p className="font-medium text-purple-600">
+                          <p className="font-medium text-purple-600 mt-0.5">
                             {productivity.toFixed(2)} kg/m²
                           </p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-[10px] md:text-xs text-muted-foreground">
                             {(() => {
                               const amount = safeParseNumber(harvest.amount)
                               const unit = harvest.unit || 'kg'
@@ -337,33 +349,35 @@ export function Harvests() {
                         </div>
                         <div>
                           <span className="text-muted-foreground">Luas Lahan</span>
-                          <p className="font-medium">
+                          <p className="font-medium mt-0.5">
                             {plant?.landArea || 0} m²
                           </p>
                         </div>
                       </div>
                     
                       {harvest.notes && (
-                        <p className="text-xs text-muted-foreground mt-2 italic">
+                        <p className="text-[10px] md:text-xs text-muted-foreground mt-1.5 md:mt-2 italic">
                           Catatan: {harvest.notes}
                         </p>
                       )}
                     </div>
 
-                    <div className="flex gap-2">
+                    <div className="flex sm:flex-col gap-1.5 md:gap-2 flex-shrink-0 self-stretch sm:self-start">
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => handleEdit(harvest)}
+                        className="h-8 w-8 md:h-9 md:w-9"
                       >
-                        <Edit className="h-4 w-4" />
+                        <Edit className="h-3 w-3 md:h-4 md:w-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => handleDelete(harvest.id)}
+                        className="h-8 w-8 md:h-9 md:w-9"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
                       </Button>
                     </div>
                   </div>
@@ -449,8 +463,8 @@ export function Harvests() {
               onChange={(e) => setFormData({ ...formData, pricePerKg: e.target.value })}
               required
             />
-            <p className="text-xs text-muted-foreground">
-              💡 Harga per kg (sistem akan otomatis konversi untuk ton/kuintal)
+            <p className="text-xs text-muted-foreground opacity-70 italic">
+              Harga per kg (sistem akan otomatis konversi untuk ton/kuintal)
             </p>
           </div>
 

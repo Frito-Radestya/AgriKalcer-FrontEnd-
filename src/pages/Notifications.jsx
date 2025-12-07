@@ -18,47 +18,47 @@ function NotificationItem({ notification, onMarkAsRead, onDelete }) {
   
   return (
     <div
-      className={`flex items-start gap-4 p-4 rounded-lg ${
+      className={`flex items-start gap-2 md:gap-4 p-3 md:p-4 rounded-lg ${
         notification.read ? 'bg-muted' : 'bg-primary/10 border-l-4 border-primary'
       }`}
     >
       <div className="flex-shrink-0">
-        <div className="p-2 rounded-full bg-primary/10">
-          <Icon className="h-5 w-5 text-primary" />
+        <div className="p-1.5 md:p-2 rounded-full bg-primary/10">
+          <Icon className="h-4 w-4 md:h-5 md:w-5 text-primary" />
         </div>
       </div>
-      <div className="flex-1">
-        <div className="flex justify-between items-start">
-          <h3 className="font-medium">{notification.title}</h3>
-          <span className="text-xs text-muted-foreground">
+      <div className="flex-1 min-w-0">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1">
+          <h3 className="font-medium text-sm md:text-base truncate">{notification.title}</h3>
+          <span className="text-xs text-muted-foreground flex-shrink-0">
             {notification.createdAt || notification.created_at ? 
               new Date(notification.createdAt || notification.created_at).toLocaleString('id-ID') : 
               'Tanggal tidak tersedia'
             }
           </span>
         </div>
-        <p className="text-sm text-muted-foreground mt-1">
+        <p className="text-xs md:text-sm text-muted-foreground mt-1 line-clamp-2">
           {notification.message}
         </p>
       </div>
-      <div className="flex gap-2">
+      <div className="flex gap-1 md:gap-2 flex-shrink-0">
         {!notification.read && (
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8"
+            className="h-7 w-7 md:h-8 md:w-8"
             onClick={() => onMarkAsRead(notification.id)}
           >
-            <Check className="h-4 w-4" />
+            <Check className="h-3.5 w-3.5 md:h-4 md:w-4" />
           </Button>
         )}
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-destructive hover:text-destructive"
+          className="h-7 w-7 md:h-8 md:w-8 text-destructive hover:text-destructive"
           onClick={() => onDelete(notification.id)}
         >
-          <Trash2 className="h-4 w-4" />
+          <Trash2 className="h-3.5 w-3.5 md:h-4 md:w-4" />
         </Button>
       </div>
     </div>
@@ -104,48 +104,49 @@ export function Notifications() {
   }
 
   return (
-    <div className="space-y-8 lg:space-y-10">
+    <div className="space-y-4 md:space-y-6 lg:space-y-8">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <div>
-          <h2 className="text-3xl font-extrabold tracking-tight brand-title">Notifikasi</h2>
-          <p className="text-muted-foreground">
+          <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight brand-title">Notifikasi</h2>
+          <p className="text-sm md:text-base text-muted-foreground">
             {unreadNotifications.length} notifikasi belum dibaca
           </p>
         </div>
         {unreadNotifications.length > 0 && (
-          <Button onClick={handleMarkAllAsRead} className="brand-btn">
-            <Check className="h-4 w-4 mr-2" />
-            Tandai Semua Sudah Dibaca
+          <Button onClick={handleMarkAllAsRead} className="brand-btn text-sm md:text-base">
+            <Check className="h-4 w-4 mr-1.5 md:mr-2" />
+            <span className="hidden sm:inline">Tandai Semua Sudah Dibaca</span>
+            <span className="sm:hidden">Tandai Semua</span>
           </Button>
         )}
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 lg:gap-6 mb-4 md:mb-6 lg:mb-8">
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-3 md:p-4 lg:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Notifikasi</p>
-                <p className="text-3xl font-bold mt-2">{notifications.length}</p>
+                <p className="text-xs md:text-sm text-muted-foreground">Total Notifikasi</p>
+                <p className="text-2xl md:text-3xl font-bold mt-1 md:mt-2">{notifications.length}</p>
               </div>
-              <div className="bg-green-100 dark:bg-green-900 p-3 rounded-lg">
-                <Bell className="h-6 w-6 text-green-700" />
+              <div className="bg-green-100 dark:bg-green-900 p-2 md:p-3 rounded-lg">
+                <Bell className="h-5 w-5 md:h-6 md:w-6 text-green-700" />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-3 md:p-4 lg:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Belum Dibaca</p>
-                <p className="text-3xl font-bold mt-2">{unreadNotifications.length}</p>
+                <p className="text-xs md:text-sm text-muted-foreground">Belum Dibaca</p>
+                <p className="text-2xl md:text-3xl font-bold mt-1 md:mt-2">{unreadNotifications.length}</p>
               </div>
-              <div className="bg-yellow-100 dark:bg-yellow-900 p-3 rounded-lg">
-                <Bell className="h-6 w-6 text-green-700" />
+              <div className="bg-yellow-100 dark:bg-yellow-900 p-2 md:p-3 rounded-lg">
+                <Bell className="h-5 w-5 md:h-6 md:w-6 text-green-700" />
               </div>
             </div>
           </CardContent>

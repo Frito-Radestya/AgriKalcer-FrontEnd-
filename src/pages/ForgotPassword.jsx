@@ -1,33 +1,44 @@
-import { useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useSearchParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
-import { Input, Label } from '@/components/ui/Input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Mail, ArrowLeft, CheckCircle } from 'lucide-react'
+import { Input } from '@/components/ui/Input'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { Alert } from '@/components/ui/Alert'
+import { Spinner } from '@/components/ui/Spinner'
+import { Mail, ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4001'
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4001/api'
 
-export function ForgotPassword() {
+export default function ForgotPassword() {
   const [searchParams] = useSearchParams()
-  const token = searchParams.get('token')
-  const isReset = !!token
-
   const [email, setEmail] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [token, setToken] = useState('')
+  const [step, setStep] = useState('request') // 'request', 'reset', 'success'
   const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState('')
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
+  const [message, setMessage] = useState({ type: '', text: '' })
+  const navigate = useNavigate()
 
-  const handleForgotPassword = async (e) => {
+  // Check for token in URL
+  useEffect(() => {
+    const urlToken = searchParams.get('token')
+    const urlEmail = searchParams.get('email')
+    
+    if (urlToken && urlEmail) {
+      setToken(urlToken)
+      setEmail(decodeURIComponent(urlEmail))
+      setStep('reset')
+    }
+  }, [searchParams])
+
+  const handleRequestReset = async (e) => {
     e.preventDefault()
     setLoading(true)
-    setError('')
-    setMessage('')
+    setMessage({ type: '', text: '' })
 
     try {
-      const response = await fetch(`${API_BASE}/api/auth/forgot-password`, {
+      const response = await fetch(`${API_BASE}/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
@@ -36,16 +47,23 @@ export function ForgotPassword() {
       const data = await response.json()
 
       if (response.ok) {
-        setSuccess(true)
-        setMessage(data.message)
-        if (data.resetLink) {
-          setMessage(`${data.message}. Reset link: ${data.resetLink}`)
-        }
+        setMessage({ 
+          type: 'success', 
+          text: data.message || 'Tautan reset password telah dikirim ke email Anda' 
+        })
+        setStep('reset')
       } else {
-        setError(data.message)
+        setMessage({ 
+          type: 'error', 
+          text: data.message || 'Gagal mengirim email reset password' 
+        })
       }
     } catch (error) {
-      setError('Terjadi kesalahan. Silakan coba lagi.')
+      console.error('Error:', error)
+      setMessage({ 
+        type: 'error', 
+        text: 'Terjadi kesalahan. Silakan coba lagi nanti.' 
+      })
     } finally {
       setLoading(false)
     }
@@ -54,212 +72,185 @@ export function ForgotPassword() {
   const handleResetPassword = async (e) => {
     e.preventDefault()
     setLoading(true)
-    setError('')
-    setMessage('')
+    setMessage({ type: '', text: '' })
 
     if (newPassword !== confirmPassword) {
-      setError('Password tidak cocok')
+      setMessage({ 
+        type: 'error', 
+        text: 'Password dan konfirmasi password tidak cocok' 
+      })
       setLoading(false)
       return
     }
 
-    if (newPassword.length < 6) {
-      setError('Password minimal 6 karakter')
+    if (newPassword.length < 8) {
+      setMessage({ 
+        type: 'error', 
+        text: 'Password minimal 8 karakter' 
+      })
       setLoading(false)
       return
     }
 
     try {
-      const response = await fetch(`${API_BASE}/api/auth/reset-password`, {
+      const response = await fetch(`${API_BASE}/auth/reset-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, newPassword })
+        body: JSON.stringify({ 
+          token, 
+          email,
+          newPassword 
+        })
       })
 
       const data = await response.json()
 
       if (response.ok) {
-        setSuccess(true)
-        setMessage(data.message)
+        setStep('success')
+        setMessage({ 
+          type: 'success', 
+          text: data.message || 'Password berhasil direset. Silakan login dengan password baru Anda.' 
+        })
       } else {
-        setError(data.message)
+        setMessage({ 
+          type: 'error', 
+          text: data.message || 'Gagal mereset password' 
+        })
       }
     } catch (error) {
-      setError('Terjadi kesalahan. Silakan coba lagi.')
+      console.error('Error:', error)
+      setMessage({ 
+        type: 'error', 
+        text: 'Terjadi kesalahan. Silakan coba lagi nanti.' 
+      })
     } finally {
       setLoading(false)
     }
   }
 
-  if (isReset) {
-    return (
-      <div className="relative min-h-screen overflow-hidden bg-[#0b130f] text-[#f7f3eb]">
-        <div className="absolute inset-0">
-          <img
-            src="https://images.unsplash.com/photo-1592924397982-881a0b0459b2?auto=format&fit=crop&w=1920&q=80"
-            alt="Latar agrikultur"
-            className="h-full w-full object-cover opacity-20"
-          />
-          <div className="absolute inset-0 bg-gradient-to-br from-[#08130d] via-[#0b130f]/90 to-[#1c2f22]/85 rounded-l-3xl" />
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div className="text-center">
+          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+            {step === 'success' ? 'Berhasil!' : 'Lupa Password'}
+          </h2>
+          <p className="mt-2 text-sm text-gray-600">
+            {step === 'request' && 'Masukkan email Anda untuk menerima tautan reset password'}
+            {step === 'reset' && 'Masukkan password baru Anda'}
+            {step === 'success' && 'Password Anda berhasil direset. Silakan login dengan password baru Anda.'}
+          </p>
         </div>
-        <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-16">
-          <Card className="w-full max-w-md border border-white/10 bg-white/5 backdrop-blur-2xl text-white shadow-[0_25px_60px_rgba(0,0,0,0.35)]">
-            <CardHeader className="space-y-3 pb-6">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#ffe457]/20">
-                <CheckCircle className="h-7 w-7 text-[#ffe457]" />
-              </div>
-              <CardTitle className="text-2xl font-semibold text-center text-white">Reset Password</CardTitle>
-              <CardDescription className="text-center text-[#d3c9b6]">
-                Masukkan password baru Anda
-              </CardDescription>
+
+        {message.text && (
+          <Alert 
+            variant={message.type === 'error' ? 'destructive' : 'default'}
+            className="mb-4"
+          >
+            {message.type === 'error' ? (
+              <AlertCircle className="h-4 w-4" />
+            ) : (
+              <CheckCircle className="h-4 w-4" />
+            )}
+            <span>{message.text}</span>
+          </Alert>
+        )}
+
+        {step === 'success' ? (
+          <div className="mt-8 text-center">
+            <Button onClick={() => navigate('/login')} className="w-full">
+              Kembali ke Login
+            </Button>
+          </div>
+        ) : (
+          <Card className="mt-8">
+            <CardHeader>
+              <CardTitle className="text-center">
+                {step === 'request' ? 'Reset Password' : 'Buat Password Baru'}
+              </CardTitle>
             </CardHeader>
             <CardContent>
-            {success ? (
-              <div className="text-center space-y-4">
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-500/20">
-                  <CheckCircle className="h-7 w-7 text-green-500" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white">Berhasil!</h3>
-                  <p className="text-[#d3c9b6]">{message}</p>
-                </div>
-                <Link to="/login">
-                  <Button className="w-full h-12 rounded-full bg-[#ffe457] text-[#1b2c1f] hover:bg-[#ffd12f] font-semibold shadow-[0_15px_35px_rgba(0,0,0,0.35)]">
-                    Kembali ke Login
-                  </Button>
-                </Link>
-              </div>
-            ) : (
-              <form onSubmit={handleResetPassword} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="newPassword" className="text-sm font-medium text-[#d3c9b6]">Password Baru</Label>
-                  <Input
-                    id="newPassword"
-                    type="password"
-                    placeholder="Masukkan password baru"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    required
-                    className="h-12 rounded-2xl border-white/15 bg-white/5 text-white placeholder:text-white/40 focus-visible:ring-[#ffe457] focus-visible:border-white/30"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword" className="text-sm font-medium text-[#d3c9b6]">Konfirmasi Password</Label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    placeholder="Konfirmasi password baru"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                    className="h-12 rounded-2xl border-white/15 bg-white/5 text-white placeholder:text-white/40 focus-visible:ring-[#ffe457] focus-visible:border-white/30"
-                  />
-                </div>
-
-                {error && (
-                  <div className="text-red-400 text-sm text-center bg-red-500/10 p-3 rounded-lg border border-red-500/20">
-                    {error}
+              <form 
+                onSubmit={step === 'request' ? handleRequestReset : handleResetPassword} 
+                className="mt-8 space-y-6"
+              >
+                {step === 'request' ? (
+                  <div>
+                    <div className="mb-4">
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        autoComplete="email"
+                        required
+                        placeholder="Email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full"
+                      />
+                    </div>
                   </div>
+                ) : (
+                  <>
+                    <div className="space-y-4">
+                      <Input
+                        id="newPassword"
+                        name="newPassword"
+                        type="password"
+                        autoComplete="new-password"
+                        required
+                        placeholder="Password Baru"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="w-full"
+                      />
+                      <Input
+                        id="confirmPassword"
+                        name="confirmPassword"
+                        type="password"
+                        autoComplete="new-password"
+                        required
+                        placeholder="Konfirmasi Password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="w-full"
+                      />
+                    </div>
+                  </>
                 )}
 
-                <Button type="submit" className="w-full h-12 rounded-full bg-[#ffe457] text-[#1b2c1f] hover:bg-[#ffd12f] font-semibold shadow-[0_15px_35px_rgba(0,0,0,0.35)]" disabled={loading}>
-                  {loading ? 'Memproses...' : 'Reset Password'}
-                </Button>
-
-                <Link to="/login" className="block text-center">
-                  <Button variant="ghost" className="w-full h-12 rounded-full text-[#c4bbab] hover:text-white hover:bg-white/5">
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    Kembali ke Login
+                <div>
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <>
+                        <Spinner className="mr-2 h-4 w-4" />
+                        Memproses...
+                      </>
+                    ) : step === 'request' ? (
+                      'Kirim Tautan Reset'
+                    ) : (
+                      'Reset Password'
+                    )}
                   </Button>
-                </Link>
+                </div>
               </form>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-    )
-  }
 
-  return (
-    <div className="relative min-h-screen overflow-hidden bg-[#0b130f] text-[#f7f3eb]">
-      <div className="absolute inset-0">
-        <img
-          src="https://images.unsplash.com/photo-1592924397982-881a0b0459b2?auto=format&fit=crop&w=1920&q=80"
-          alt="Latar agrikultur"
-          className="h-full w-full object-cover opacity-20"
-        />
-        <div className="absolute inset-0 bg-gradient-to-br from-[#08130d] via-[#0b130f]/90 to-[#1c2f22]/85 rounded-l-3xl" />
-      </div>
-      <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-16">
-        <Card className="w-full max-w-md border border-white/10 bg-white/5 backdrop-blur-2xl text-white shadow-[0_25px_60px_rgba(0,0,0,0.35)]">
-          <CardHeader className="space-y-3 pb-6">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#ffe457]/20">
-              <Mail className="h-7 w-7 text-[#ffe457]" />
-            </div>
-            <CardTitle className="text-2xl font-semibold text-center text-white">Lupa Password</CardTitle>
-            <CardDescription className="text-center text-[#d3c9b6]">
-              Masukkan email Anda untuk menerima link reset password
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-          {success ? (
-            <div className="text-center space-y-4">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-500/20">
-                <CheckCircle className="h-7 w-7 text-green-500" />
+              <div className="mt-4 text-center text-sm">
+                <Link
+                  to="/login"
+                  className="font-medium text-indigo-600 hover:text-indigo-500 flex items-center justify-center"
+                >
+                  <ArrowLeft className="h-4 w-4 mr-1" />
+                  Kembali ke halaman login
+                </Link>
               </div>
-              <div>
-                <h3 className="text-lg font-semibold text-white">Link Terkirim!</h3>
-                <p className="text-[#d3c9b6]">{message}</p>
-              </div>
-              <Link to="/login">
-                <Button className="w-full h-12 rounded-full bg-[#ffe457] text-[#1b2c1f] hover:bg-[#ffd12f] font-semibold shadow-[0_15px_35px_rgba(0,0,0,0.35)]">
-                  Kembali ke Login
-                </Button>
-              </Link>
-            </div>
-          ) : (
-            <form onSubmit={handleForgotPassword} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium text-[#d3c9b6]">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="nama@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="h-12 rounded-2xl border-white/15 bg-white/5 text-white placeholder:text-white/40 focus-visible:ring-[#ffe457] focus-visible:border-white/30"
-                />
-              </div>
-
-              {error && (
-                <div className="text-red-400 text-sm text-center bg-red-500/10 p-3 rounded-lg border border-red-500/20">
-                  {error}
-                </div>
-              )}
-
-              {message && (
-                <div className="text-green-400 text-sm text-center bg-green-500/10 p-3 rounded-lg border border-green-500/20">
-                  {message}
-                </div>
-              )}
-
-              <Button type="submit" className="w-full h-12 rounded-full bg-[#ffe457] text-[#1b2c1f] hover:bg-[#ffd12f] font-semibold shadow-[0_15px_35px_rgba(0,0,0,0.35)]" disabled={loading}>
-                {loading ? 'Memproses...' : 'Kirim Link Reset'}
-              </Button>
-
-              <Link to="/login" className="block text-center">
-                <Button variant="ghost" className="w-full h-12 rounded-full text-[#c4bbab] hover:text-white hover:bg-white/5">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Kembali ke Login
-                </Button>
-              </Link>
-            </form>
-          )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   )

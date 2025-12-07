@@ -4,7 +4,7 @@ export function Card({ className, children, ...props }) {
   return (
     <div
       className={cn(
-        'rounded-[28px] border border-white/10 bg-white/5 backdrop-blur-xl text-white shadow-[0_20px_45px_rgba(0,0,0,0.45)] transition-all duration-300 hover:border-white/20 overflow-hidden',
+        'rounded-[20px] md:rounded-[28px] border border-white/10 bg-white/5 backdrop-blur-xl text-white shadow-[0_20px_45px_rgba(0,0,0,0.45)] transition-all duration-300 hover:border-white/20 overflow-hidden',
         className
       )}
       {...props}
@@ -17,7 +17,7 @@ export function Card({ className, children, ...props }) {
 export function CardHeader({ className, children, ...props }) {
   return (
     <div
-      className={cn('flex flex-col space-y-2 p-6 border-b border-white/10', className)}
+      className={cn('flex flex-col space-y-1.5 p-4 md:p-6 border-b border-white/10', className)}
       {...props}
     >
       {children}
@@ -28,7 +28,7 @@ export function CardHeader({ className, children, ...props }) {
 export function CardTitle({ className, children, ...props }) {
   return (
     <h3
-      className={cn('text-2xl font-semibold leading-none tracking-tight', className)}
+      className={cn('text-xl md:text-2xl font-semibold leading-none tracking-tight', className)}
       {...props}
     >
       {children}
@@ -49,7 +49,7 @@ export function CardDescription({ className, children, ...props }) {
 
 export function CardContent({ className, children, ...props }) {
   return (
-    <div className={cn('p-6 text-white/90', className)} {...props}>
+    <div className={cn('p-4 md:p-6 pt-0', className)} {...props}>
       {children}
     </div>
   )
@@ -58,7 +58,7 @@ export function CardContent({ className, children, ...props }) {
 export function CardFooter({ className, children, ...props }) {
   return (
     <div
-      className={cn('flex items-center p-6 pt-0 border-t border-white/10 text-white/90', className)}
+      className={cn('flex items-center p-4 md:p-6 pt-0', className)}
       {...props}
     >
       {children}

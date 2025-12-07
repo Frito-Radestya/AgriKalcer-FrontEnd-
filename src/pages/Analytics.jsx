@@ -154,37 +154,37 @@ export function Analytics() {
     : 0
 
   return (
-    <div className="space-y-8 lg:space-y-10">
+    <div className="space-y-4 md:space-y-6 lg:space-y-8">
       {/* Header */}
       <div>
-        <h2 className="text-3xl font-extrabold tracking-tight brand-title">Analisis & Statistik</h2>
-        <p className="text-muted-foreground">Visualisasi data pertanian Anda</p>
+        <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight brand-title">Analisis & Statistik</h2>
+        <p className="text-sm md:text-base text-muted-foreground">Visualisasi data pertanian Anda</p>
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6">
         <Card>
-          <CardContent className="p-6 pt-2">
-            <p className="text-sm text-muted-foreground">Total Tanaman</p>
-            <p className="text-3xl font-bold mt-2">{plants.length}</p>
+          <CardContent className="p-3 md:p-4 lg:p-6 pt-1 md:pt-2">
+            <p className="text-xs md:text-sm text-muted-foreground">Total Tanaman</p>
+            <p className="text-2xl md:text-3xl font-bold mt-1 md:mt-2">{plants.length}</p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6 pt-2">
-            <p className="text-sm text-muted-foreground">Total Panen</p>
-            <p className="text-3xl font-bold mt-2">{harvests.length}</p>
+          <CardContent className="p-3 md:p-4 lg:p-6 pt-1 md:pt-2">
+            <p className="text-xs md:text-sm text-muted-foreground">Total Panen</p>
+            <p className="text-2xl md:text-3xl font-bold mt-1 md:mt-2">{harvests.length}</p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6 pt-2">
-            <p className="text-sm text-muted-foreground">Rata-rata Hasil</p>
-            <p className="text-3xl font-bold mt-2">{avgHarvestAmount.toFixed(1)} kg</p>
+          <CardContent className="p-3 md:p-4 lg:p-6 pt-1 md:pt-2">
+            <p className="text-xs md:text-sm text-muted-foreground">Rata-rata Hasil</p>
+            <p className="text-2xl md:text-3xl font-bold mt-1 md:mt-2">{avgHarvestAmount.toFixed(1)} kg</p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6 pt-2">
-            <p className="text-sm text-muted-foreground">Laba Bersih</p>
-            <p className={`text-2xl font-bold mt-2 ${totalProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+          <CardContent className="p-3 md:p-4 lg:p-6 pt-1 md:pt-2">
+            <p className="text-xs md:text-sm text-muted-foreground">Laba Bersih</p>
+            <p className={`text-lg md:text-2xl font-bold mt-1 md:mt-2 ${totalProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               {formatCurrency(totalProfit)}
             </p>
           </CardContent>
@@ -192,10 +192,10 @@ export function Analytics() {
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4 lg:gap-6">
         {/* Financial Trend */}
         <Card>
-          <CardHeader className="brand-header-gradient">
+          <CardHeader className="brand-header-gradient p-3 md:p-4">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 tracking-tight">
                 <TrendingUp className="h-5 w-5" />

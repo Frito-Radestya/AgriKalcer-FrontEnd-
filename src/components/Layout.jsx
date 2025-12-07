@@ -23,19 +23,31 @@ import {
   HelpCircle,
   ChevronDown,
   Bot,
+  Mail,
+  Settings
 } from 'lucide-react'
 import LogoWeb from '../../assets/iconlogo1.png'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  // Letakkan Lahan di bagian atas agar mudah diakses
+  { name: 'Lahan', href: '/lands', icon: MapPin },
   { name: 'Data Tanam', href: '/plants', icon: Sprout },
   { name: 'Perawatan', href: '/maintenance', icon: Droplets },
   { name: 'Panen', href: '/harvests', icon: Calendar },
   { name: 'Keuangan', href: '/finances', icon: DollarSign },
   { name: 'Analisis', href: '/analytics', icon: TrendingUp },
-  { name: 'Lahan', href: '/lands', icon: MapPin },
   { name: 'AI Assistant', href: '/ai-chat', icon: Bot },
   { name: 'Notifikasi', href: '/notifications', icon: Bell },
+  
+  // Admin section
+  {
+    name: 'Admin',
+    icon: Settings,
+    children: [
+      { name: 'Pengaturan Email', href: '/admin/email-settings', icon: Mail },
+    ],
+  },
 ]
 
 export function Layout({ children }) {
@@ -151,38 +163,66 @@ export function Layout({ children }) {
                   Lainnya
                 </h3>
                 <div className="space-y-1">
-                  {navigation.slice(7).map((item) => {
-                    const isActive = location.pathname === item.href
-                    const Icon = item.icon
-                    const showBadge = item.name === 'Notifikasi' && unreadCount > 0
-
-                    return (
-                      <Link
-                        key={item.name}
-                        to={item.href}
-                        className={`group flex items-center gap-3 px-3 py-2.5 rounded-2xl border ${
-                          isActive
-                            ? 'border-white/20 bg-white/10 text-white shadow-[0_15px_40px_rgba(0,0,0,0.35)]'
-                            : 'border-transparent text-[#c4bbab] hover:border-white/10 hover:bg-white/5'
+                  {navigation.slice(7, 9).map((item) => (
+                    <Link
+                      key={item.name}
+                      to={item.href}
+                      className={`group flex items-center gap-3 px-3 py-2.5 rounded-2xl border ${
+                        location.pathname === item.href
+                          ? 'border-white/20 bg-white/10 text-white shadow-[0_15px_40px_rgba(0,0,0,0.35)]'
+                          : 'border-transparent text-[#c4bbab] hover:border-white/10 hover:bg-white/5'
+                      }`}
+                      onClick={() => setSidebarOpen(false)}
+                    >
+                      <item.icon
+                        className={`h-5 w-5 ${
+                          location.pathname === item.href ? 'text-[#ffe457]' : 'text-[#8a937f] group-hover:text-[#ffe457]'
                         }`}
-                        onClick={() => setSidebarOpen(false)}
-                      >
-                        <Icon
-                          className={`h-5 w-5 ${
-                            isActive ? 'text-[#ffe457]' : 'text-[#8a937f] group-hover:text-[#ffe457]'
-                          }`}
-                        />
-                        <span className="flex-1 text-sm font-medium tracking-wide">{item.name}</span>
-                        {showBadge && (
-                          <Badge variant="danger" className="ml-auto">
-                            {unreadCount}
-                          </Badge>
-                        )}
-                      </Link>
-                    )
-                  })}
+                      />
+                      <span className="flex-1 text-sm font-medium tracking-wide">{item.name}</span>
+                      {item.name === 'Notifikasi' && unreadCount > 0 && (
+                        <Badge variant="danger" className="ml-auto">
+                          {unreadCount}
+                        </Badge>
+                      )}
+                    </Link>
+                  ))}
                 </div>
               </div>
+
+              {/* Admin Section */}
+              {user?.role === 'admin' && (
+                <div>
+                  <h3 className="px-3 text-[11px] font-semibold uppercase tracking-[0.35em] text-[#7d8773] mb-3">
+                    Admin
+                  </h3>
+                  <div className="space-y-1">
+                    {navigation.slice(9).map((section) => (
+                      <div key={section.name} className="space-y-1">
+                        {section.children.map((item) => (
+                          <Link
+                            key={item.href}
+                            to={item.href}
+                            className={`group flex items-center gap-3 px-3 py-2.5 rounded-2xl border ${
+                              location.pathname === item.href
+                                ? 'border-white/20 bg-white/10 text-white shadow-[0_15px_40px_rgba(0,0,0,0.35)]'
+                                : 'border-transparent text-[#c4bbab] hover:border-white/10 hover:bg-white/5'
+                            }`}
+                            onClick={() => setSidebarOpen(false)}
+                          >
+                            <item.icon
+                              className={`h-5 w-5 ${
+                                location.pathname === item.href ? 'text-[#ffe457]' : 'text-[#8a937f] group-hover:text-[#ffe457]'
+                              }`}
+                            />
+                            <span className="flex-1 text-sm font-medium tracking-wide">{item.name}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </nav>
 
             {/* User info */}
@@ -212,39 +252,36 @@ export function Layout({ children }) {
         <div className="lg:pl-72">
           {/* Top bar */}
           <header className="sticky top-0 z-30 border-b border-white/10 bg-[#0b130f]/90 backdrop-blur-xl">
-            <div className="flex items-center justify-between px-4 lg:px-6 py-4">
-              <div className="flex items-center gap-4 flex-1">
+            <div className="flex items-center justify-between px-1.5 sm:px-2.5 lg:px-6 py-2.5 sm:py-3 lg:py-4">
+              <div className="flex items-center gap-2 sm:gap-3 flex-1">
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="lg:hidden text-white hover:text-[#ffe457]"
+                  className="lg:hidden text-white hover:text-[#ffe457] h-8 w-8"
                   onClick={() => setSidebarOpen(true)}
                 >
-                  <Menu className="h-5 w-5" />
+                  <Menu className="h-4 w-4" />
                 </Button>
 
                 <div className="flex-1 lg:max-w-xl">
-                  <p className="text-xs uppercase tracking-[0.4em] text-[#9db892]">
+                  <p className="text-[10px] sm:text-xs uppercase tracking-[0.35em] text-[#9db892]">
                     {currentPage?.name || 'Dashboard'}
                   </p>
-                  <h1 className="text-2xl font-semibold text-white">
-                    Kanvas {currentPage?.name?.toLowerCase() || 'dashboard'} pertanian
+                  <h1 className="text-base sm:text-lg lg:text-xl font-semibold text-white leading-snug">
+                    {currentPage?.name?.toLowerCase() || 'dashboard'} pertanian
                   </h1>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
-                {/* Weather Widget */}
-                <WeatherWidget />
-                
+              <div className="flex items-center gap-2 sm:gap-3">
                 {/* Notifications */}
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="relative text-white hover:text-[#ffe457]"
+                  className="relative text-white hover:text-[#ffe457] h-8 w-8 sm:h-9 sm:w-9"
                   onClick={() => navigate('/notifications')}
                 >
-                  <Bell className="h-5 w-5" />
+                  <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
                   {unreadCount > 0 && (
                     <span className="absolute -top-1 -right-1 bg-[#f8c06b] text-[#1b2c1f] text-xs font-semibold rounded-full h-5 w-5 flex items-center justify-center">
                       {unreadCount}
@@ -252,17 +289,20 @@ export function Layout({ children }) {
                   )}
                 </Button>
 
+                {/* Weather Widget (desktop, compact) */}
+                <WeatherWidget />
+
                 {/* Profile */}
                 <div className="relative">
                   <Button
                     variant="ghost"
-                    className="flex items-center gap-2 rounded-full border border-white/10 px-3 py-1.5 text-white hover:bg-white/5"
+                    className="flex items-center gap-1.5 sm:gap-2 rounded-full border border-white/10 px-2.5 sm:px-3 py-1 sm:py-1.5 text-white hover:bg-white/5"
                     onClick={() => setProfileOpen(!profileOpen)}
                   >
-                    <div className="bg-[#ffe457]/30 p-1.5 rounded-full">
-                      <User className="h-4 w-4 text-[#ffe457]" />
+                    <div className="bg-[#ffe457]/30 p-1 sm:p-1.5 rounded-full">
+                      <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#ffe457]" />
                     </div>
-                    <ChevronDown className="h-4 w-4 text-white/60" />
+                    <ChevronDown className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white/60" />
                   </Button>
 
                   {profileOpen && (
@@ -270,30 +310,19 @@ export function Layout({ children }) {
                       <button
                         className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-white/5 w-full text-left"
                         onClick={() => {
-                          setProfileOpen(false)
-                          setProfileModalOpen(true)
+                          setProfileOpen(false);
+                          setProfileModalOpen(true);
                         }}
                       >
                         <User className="h-4 w-4" />
-                        Profil
+                        <span>Profil Saya</span>
                       </button>
                       <button
-                        className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-white/5 w-full text-left"
-                        onClick={() => {
-                          setProfileOpen(false)
-                          setHelpModalOpen(true)
-                        }}
-                      >
-                        <HelpCircle className="h-4 w-4" />
-                        Bantuan
-                      </button>
-                      <hr className="my-1 border-white/10" />
-                      <button
-                        className="flex items-center gap-2 px-4 py-2 text-sm text-[#f8c06b] hover:bg-white/5 w-full text-left"
+                        className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-white/5 w-full text-left text-red-400"
                         onClick={handleLogout}
                       >
                         <LogOut className="h-4 w-4" />
-                        Keluar
+                        <span>Keluar</span>
                       </button>
                     </div>
                   )}

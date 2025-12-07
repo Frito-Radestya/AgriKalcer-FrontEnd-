@@ -65,9 +65,19 @@ export function Dashboard() {
   ]
 
   return (
-    <div className="space-y-8 lg:space-y-10">
+    <div className="space-y-4 md:space-y-6 lg:space-y-8">
+      {/* Dashboard Header */}
+      <div className="mb-1 md:mb-2">
+        <h2 className="text-xl md:text-2xl lg:text-3xl font-extrabold tracking-tight text-white">
+          Dashboard Utama
+        </h2>
+        <p className="text-xs md:text-sm text-[#c4bbab]">
+          Pantau ringkasan aktivitas, keuangan, dan kondisi lahan pertanian Anda dalam satu tampilan.
+        </p>
+      </div>
+
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {stats.map((stat) => {
           const Icon = stat.icon
           return (
@@ -75,18 +85,18 @@ export function Dashboard() {
               key={stat.title}
               className="hover:-translate-y-1 transition-all duration-300"
             >
-              <CardContent className="p-6">
+              <CardContent className="p-3 md:p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.35em] text-[#b8af9f]">
+                    <p className="text-[10px] md:text-xs uppercase tracking-[0.35em] text-[#b8af9f]">
                       {stat.title}
                     </p>
-                    <p className="text-2xl font-semibold mt-6 text-white">
+                    <p className="text-lg md:text-xl font-semibold mt-3 md:mt-4 text-white">
                       {stat.value}
                     </p>
                   </div>
-                  <div className="rounded-2xl bg-white/10 p-4 text-[#ffe457] shadow-inner shadow-black/30">
-                    <Icon className="h-7 w-7" />
+                  <div className="rounded-xl bg-white/10 p-2 md:p-3 text-[#ffe457] shadow-inner shadow-black/30">
+                    <Icon className="h-5 w-5 md:h-6 md:w-6" />
                   </div>
                 </div>
               </CardContent>
@@ -98,22 +108,22 @@ export function Dashboard() {
       {/* Unread Notifications Alert */}
       {recentNotifications.length > 0 && (
         <Card className="brand-header-gradient border-white/15">
-          <CardHeader className="border-0">
+          <CardHeader className="border-0 p-3 md:p-4">
             <CardTitle className="flex items-center gap-2 text-white">
-              <Bell className="h-5 w-5 text-[#ffe457]" />
-              {recentNotifications.length} Notifikasi Baru
+              <Bell className="h-4 w-4 md:h-5 md:w-5 text-[#ffe457]" />
+              <span className="text-sm md:text-base">{recentNotifications.length} Notifikasi Baru</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="max-h-48 overflow-y-auto space-y-2">
+            <div className="max-h-36 md:max-h-48 overflow-y-auto space-y-1.5">
               {recentNotifications.slice(0, 10).map((notification) => (
                 <div
                   key={notification.id}
-                  className="flex items-center gap-2 p-2 rounded-xl border border-white/5 bg-white/5"
+                  className="flex items-center gap-1.5 p-1.5 md:p-2 rounded-lg border border-white/5 bg-white/5"
                 >
-                  <AlertCircle className="h-4 w-4 text-[#ffe457]" />
-                  <span className="text-sm font-medium text-white">{notification.title}</span>
-                  <span className="text-xs text-[#b8af9f]">
+                  <AlertCircle className="h-3.5 w-3.5 md:h-4 md:w-4 text-[#ffe457]" />
+                  <span className="text-xs md:text-sm font-medium text-white">{notification.title}</span>
+                  <span className="text-[10px] md:text-xs text-[#b8af9f]">
                     {notification.createdAt ? new Date(notification.createdAt).toLocaleDateString() : 'Tanggal tidak tersedia'}
                   </span>
                 </div>
@@ -128,22 +138,22 @@ export function Dashboard() {
         </Card>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4 lg:gap-6">
         {/* Upcoming Harvests */}
         <Card>
-          <CardHeader className="brand-header-gradient border-0">
+          <CardHeader className="brand-header-gradient border-0 p-3 md:p-4">
             <CardTitle className="flex items-center gap-2 text-white">
-              <Calendar className="h-5 w-5 text-[#ffe457]" />
-              Panen Mendatang (7 Hari)
+              <Calendar className="h-4 w-4 md:h-5 md:w-5 text-[#ffe457]" />
+              <span className="text-sm md:text-base">Panen Mendatang (7 Hari)</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-0">
+          <CardContent className="pt-0 p-3 md:p-4">
             {upcomingHarvests.length === 0 ? (
-              <p className="text-[#b8af9f] text-center py-8">
+              <p className="text-[#b8af9f] text-center py-4 md:py-6 text-sm">
                 Tidak ada panen dalam 7 hari ke depan
               </p>
             ) : (
-              <div className="max-h-64 overflow-y-auto space-y-3">
+              <div className="max-h-48 md:max-h-64 overflow-y-auto space-y-2">
                 {upcomingHarvests.map((plant) => {
                   const daysLeft = calculateDaysDifference(
                     new Date(),
@@ -152,11 +162,11 @@ export function Dashboard() {
                   return (
                   <div
                     key={plant.id}
-                    className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/10 hover:border-white/30 transition"
+                    className="flex items-center justify-between p-2 md:p-3 bg-white/5 rounded-xl border border-white/10 hover:border-white/30 transition"
                   >
                     <div>
-                      <p className="font-semibold text-white">{plant.plantName}</p>
-                      <p className="text-sm text-[#b8af9f]">
+                      <p className="font-medium text-sm md:text-base text-white">{plant.plantName}</p>
+                      <p className="text-xs md:text-sm text-[#b8af9f]">
                         Lahan: {plant.landName}
                       </p>
                     </div>
@@ -176,27 +186,27 @@ export function Dashboard() {
 
         {/* Active Plants */}
         <Card>
-          <CardHeader className="brand-header-gradient border-0">
+          <CardHeader className="brand-header-gradient border-0 p-3 md:p-4">
             <CardTitle className="flex items-center gap-2 text-white">
-              <Sprout className="h-5 w-5 text-[#ffe457]" />
-              Tanaman Aktif
+              <Sprout className="h-4 w-4 md:h-5 md:w-5 text-[#ffe457]" />
+              <span className="text-sm md:text-base">Tanaman Aktif</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-0">
+          <CardContent className="pt-0 p-3 md:p-4">
             {activePlants.length === 0 ? (
-              <p className="text-[#b8af9f] text-center py-8">
+              <p className="text-[#b8af9f] text-center py-4 md:py-6 text-sm">
                 Belum ada tanaman aktif
               </p>
             ) : (
-              <div className="max-h-64 overflow-y-auto space-y-3">
+              <div className="max-h-48 md:max-h-64 overflow-y-auto space-y-2">
                 {activePlants.slice(0, 10).map((plant) => (
                   <div
                     key={plant.id}
-                    className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/10 hover:border-white/30 transition"
+                    className="flex items-center justify-between p-2 md:p-3 bg-white/5 rounded-xl border border-white/10 hover:border-white/30 transition"
                   >
                     <div>
-                      <p className="font-semibold text-white">{plant.plantName}</p>
-                      <p className="text-sm text-[#b8af9f]">
+                      <p className="font-medium text-sm md:text-base text-white">{plant.plantName}</p>
+                      <p className="text-xs md:text-sm text-[#b8af9f]">
                         Ditanam: {formatDate(plant.plantDate)}
                       </p>
                     </div>
@@ -212,29 +222,29 @@ export function Dashboard() {
 
         {/* Financial Summary - Full Width */}
         <Card className="lg:col-span-2">
-          <CardHeader className="brand-header-gradient border-0">
+          <CardHeader className="brand-header-gradient border-0 p-3 md:p-4">
             <CardTitle className="flex items-center gap-2 text-white">
-              <TrendingUp className="h-5 w-5 text-[#ffe457]" />
-              Ringkasan Keuangan
+              <TrendingUp className="h-4 w-4 md:h-5 md:w-5 text-[#ffe457]" />
+              <span className="text-sm md:text-base">Ringkasan Keuangan</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 p-4">
-                <span className="text-sm uppercase tracking-[0.25em] text-[#b8af9f]">Pendapatan</span>
-                <span className="text-2xl font-semibold text-[#d9f87d]">
+          <CardContent className="pt-0 p-3 md:p-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-3">
+              <div className="flex flex-col gap-2 rounded-xl border border-white/10 bg-white/5 p-3 md:p-4">
+                <span className="text-xs md:text-sm uppercase tracking-[0.25em] text-[#b8af9f]">Pendapatan</span>
+                <span className="text-lg md:text-xl font-semibold text-[#d9f87d]">
                   {formatCurrency(income)}
                 </span>
               </div>
-              <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 p-4">
-                <span className="text-sm uppercase tracking-[0.25em] text-[#b8af9f]">Pengeluaran</span>
-                <span className="text-2xl font-semibold text-[#f18b8b]">
+              <div className="flex flex-col gap-2 rounded-xl border border-white/10 bg-white/5 p-3 md:p-4">
+                <span className="text-xs md:text-sm uppercase tracking-[0.25em] text-[#b8af9f]">Pengeluaran</span>
+                <span className="text-lg md:text-xl font-semibold text-[#f18b8b]">
                   {formatCurrency(expenses)}
                 </span>
               </div>
-              <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 p-4">
-                <span className="text-sm uppercase tracking-[0.25em] text-[#b8af9f]">Laba Bersih</span>
-                <span className={`text-2xl font-semibold ${profit >= 0 ? 'text-[#d9f87d]' : 'text-[#f18b8b]'}`}>
+              <div className="flex flex-col gap-2 rounded-xl border border-white/10 bg-white/5 p-3 md:p-4">
+                <span className="text-xs md:text-sm uppercase tracking-[0.25em] text-[#b8af9f]">Laba Bersih</span>
+                <span className={`text-lg md:text-xl font-semibold ${profit >= 0 ? 'text-[#d9f87d]' : 'text-[#f18b8b]'}`}>
                   {formatCurrency(profit)}
                 </span>
               </div>
