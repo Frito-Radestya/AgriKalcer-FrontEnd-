@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 import { Cloud, CloudRain, Sun, Wind, Droplets, Thermometer } from 'lucide-react'
 import { storage } from '@/lib/storage'
 
-const API_KEY = import.meta.env.VITE_WEATHER_API_KEY || 'BRAGKGfbJes7LOKFg7ajAUyDDz284fXv'
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4001'
+const API_KEY = process.env.NEXT_PUBLIC_WEATHER_API_KEY || 'BRAGKGfbJes7LOKFg7ajAUyDDz284fXv'
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:4001'
 
 export function WeatherWidget() {
   const [weather, setWeather] = useState(null)
