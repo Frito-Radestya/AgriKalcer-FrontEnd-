@@ -48,9 +48,11 @@ export default function ForgotPasswordSimple() {
         return
       }
 
+      // Always show success message and transition to verify step
+      // Even if email fails, OTP is generated and stored
       setMessage({
         type: 'success',
-        text: 'Jika email terdaftar, kode OTP telah dikirim. Silakan cek email Anda.',
+        text: 'Kode OTP telah dikirim. Silakan cek email Anda atau gunakan kode dari console.',
       })
       console.log('Setting step to verify')
       setStep('verify')
