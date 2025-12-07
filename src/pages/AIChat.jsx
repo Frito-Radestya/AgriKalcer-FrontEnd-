@@ -66,7 +66,8 @@ export default function AIChat() {
         const formData = new FormData()
         formData.append('image', selectedImage)
 
-        const uploadResponse = await fetch('http://localhost:4001/api/ai/detect-disease', {
+        const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:4001'
+        const uploadResponse = await fetch(`${API_BASE}/api/ai/detect-disease`, {
           method: 'POST',
           body: formData
         })
@@ -79,7 +80,7 @@ export default function AIChat() {
         }
       } else {
         // Chat biasa
-        const chatResponse = await fetch('http://localhost:4001/api/ai/chat', {
+        const chatResponse = await fetch(`${API_BASE}/api/ai/chat`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'

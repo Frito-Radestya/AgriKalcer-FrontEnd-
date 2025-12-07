@@ -13,7 +13,7 @@ export function DataProvider({ children }) {
   const [finances, setFinances] = useState([])
   const [lands, setLands] = useState([])
   const [notifications, setNotifications] = useState([])
-  const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4001'
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:4001'
 
   // Helper function to refresh all data
   const refreshAllData = async () => {

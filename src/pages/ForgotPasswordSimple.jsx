@@ -8,7 +8,7 @@ import { Mail, ArrowLeft, CheckCircle, AlertCircle, Eye, EyeOff } from 'lucide-r
 import Pertanian4 from '../../assets/Pertanian4.jpg'
 import LogoWeb from '../../assets/iconlogo1.png'
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4001'
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:4001'
 
 export default function ForgotPasswordSimple() {
   const [step, setStep] = useState('request') // 'request' | 'verify' | 'success'

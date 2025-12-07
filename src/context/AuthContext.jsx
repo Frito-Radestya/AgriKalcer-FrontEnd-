@@ -5,7 +5,7 @@ import { AuthContext } from './authContext'
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
-  const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4001'
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:4001'
 
   useEffect(() => {
     const currentUser = storage.get('USER')
