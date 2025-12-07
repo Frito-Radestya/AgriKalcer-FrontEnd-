@@ -66,7 +66,7 @@ export default function AIChat() {
         const formData = new FormData()
         formData.append('image', selectedImage)
 
-        const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:4001'
+        const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4001'
         const uploadResponse = await fetch(`${API_BASE}/api/ai/detect-disease`, {
           method: 'POST',
           body: formData

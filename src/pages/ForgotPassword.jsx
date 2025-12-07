@@ -7,7 +7,7 @@ import { Alert } from '@/components/ui/Alert'
 import { Spinner } from '@/components/ui/Spinner'
 import { Mail, ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react'
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4001/api'
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4001/api'
 
 export default function ForgotPassword() {
   const [searchParams] = useSearchParams()
