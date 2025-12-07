@@ -27,13 +27,18 @@ export default function ForgotPasswordSimple() {
     setMessage({ type: '', text: '' })
 
     try {
+      console.log('Sending OTP request to:', `${API}/api/auth/request-reset-otp`)
+      console.log('Email:', email)
+      
       const res = await fetch(`${API}/api/auth/request-reset-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       })
 
+      console.log('Response status:', res.status)
       const data = await res.json().catch(() => ({}))
+      console.log('Response data:', data)
 
       if (!res.ok) {
         setMessage({
@@ -47,6 +52,7 @@ export default function ForgotPasswordSimple() {
         type: 'success',
         text: 'Jika email terdaftar, kode OTP telah dikirim. Silakan cek email Anda.',
       })
+      console.log('Setting step to verify')
       setStep('verify')
     } catch (error) {
       console.error('Error request OTP:', error)
