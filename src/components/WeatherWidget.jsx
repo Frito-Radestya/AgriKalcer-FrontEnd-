@@ -47,32 +47,9 @@ export function WeatherWidget() {
       return apiLocationName
     }
 
-    // 2) Fallback: reverse geocoding ke Nominatim (OpenStreetMap)
-    try {
-      const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=10&addressdetails=1`
-      const res = await fetch(url, {
-        headers: {
-          // Nominatim menyarankan menyertakan User-Agent yang jelas, tapi browser biasanya akan menambahkan sendiri.
-        },
-      })
-      if (!res.ok) throw new Error('Nominatim error')
-
-      const data = await res.json()
-      const address = data.address || {}
-
-      // Pilih field yang paling mendekati kota/kabupaten
-      return (
-        address.city ||
-        address.town ||
-        address.village ||
-        address.county ||
-        address.state ||
-        'Lokasi Anda'
-      )
-    } catch (e) {
-      console.warn('Reverse geocoding gagal, pakai label default.', e)
-      return 'Lokasi Anda'
-    }
+    // 2) Fallback: gunakan label default tanpa reverse geocoding
+    // Nominatim memiliki CORS restrictions, jadi kita skip
+    return 'Lokasi Anda'
   }
 
   const useDummyData = () => {
