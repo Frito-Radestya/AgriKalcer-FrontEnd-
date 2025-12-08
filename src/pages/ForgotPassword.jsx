@@ -7,7 +7,7 @@ import { Alert } from '@/components/ui/Alert'
 import { Spinner } from '@/components/ui/Spinner'
 import { Mail, ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react'
 
-const API = import.meta.env.VITE_API_URL || 'https://agrikalcer-backend-production.up.railway.app/api'
+const API = 'https://agrikalcer-backend-production.up.railway.app'
 
 export default function ForgotPassword() {
   const [searchParams] = useSearchParams()

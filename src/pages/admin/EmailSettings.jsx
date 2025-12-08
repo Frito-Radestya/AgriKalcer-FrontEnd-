@@ -29,7 +29,7 @@ const EmailSettings = () => {
     fetchEmailSettings();
   }, []);
 
-  const API = import.meta.env.VITE_API_URL|| 'https://agrikalcer-backend-production.up.railway.app';
+  const API = 'https://agrikalcer-backend-production.up.railway.app';
 
   const fetchEmailSettings = async () => {
     try {

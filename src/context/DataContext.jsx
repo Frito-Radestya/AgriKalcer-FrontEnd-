@@ -13,7 +13,7 @@ export function DataProvider({ children }) {
   const [finances, setFinances] = useState([])
   const [lands, setLands] = useState([])
   const [notifications, setNotifications] = useState([])
-  const API = import.meta.env.VITE_API_URL || 'https://agrikalcer-backend-production.up.railway.app'
+  const API = 'https://agrikalcer-backend-production.up.railway.app'
 
   // Helper function to refresh all data
   const refreshAllData = async () => {

@@ -60,13 +60,13 @@ export default function AIChat() {
 
     try {
       let response
+      const API = 'https://agrikalcer-backend-production.up.railway.app'
       
       if (selectedImage) {
         // Upload image untuk disease detection
         const formData = new FormData()
         formData.append('image', selectedImage)
 
-        const API = import.meta.env.VITE_API_URL|| 'https://agrikalcer-backend-production.up.railway.app'
         const uploadResponse = await fetch(`${API}/api/ai/detect-disease`, {
           method: 'POST',
           body: formData

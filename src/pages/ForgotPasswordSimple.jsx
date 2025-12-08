@@ -8,7 +8,7 @@ import { Mail, ArrowLeft, CheckCircle, AlertCircle, Eye, EyeOff } from 'lucide-r
 import Pertanian4 from '../../assets/Pertanian4.jpg'
 import LogoWeb from '../../assets/iconlogo1.png'
 
-const API = import.meta.env.VITE_API_URL || 'https://agrikalcer-backend-production.up.railway.app'
+const API = 'https://agrikalcer-backend-production.up.railway.app'
 
 export default function ForgotPasswordSimple() {
   const [step, setStep] = useState('request') // 'request' | 'verify' | 'success'
@@ -52,7 +52,7 @@ export default function ForgotPasswordSimple() {
       // Even if email fails, OTP is generated and stored
       setMessage({
         type: 'success',
-        text: 'Kode OTP telah dikirim. Silakan cek email Anda atau gunakan kode dari console.',
+        text: 'Kode OTP telah dikirim. Silakan cek email Anda.',
       })
       console.log('Setting step to verify')
       setStep('verify')
@@ -109,8 +109,14 @@ export default function ForgotPasswordSimple() {
 
       setMessage({
         type: 'success',
-        text: 'Password berhasil direset. Anda bisa login dengan password baru.',
+        text: 'Password berhasil direset. Anda akan dialihkan ke halaman login...',
       })
+      
+      // Redirect ke login setelah 2 detik
+      setTimeout(() => {
+        navigate('/login')
+      }, 2000)
+      
       setStep('success')
     } catch (error) {
       console.error('Error reset password OTP:', error)

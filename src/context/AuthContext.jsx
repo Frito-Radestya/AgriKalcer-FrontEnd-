@@ -5,7 +5,7 @@ import { AuthContext } from './authContext'
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
-  const API = import.meta.env.VITE_API_URL || 'https://agrikalcer-backend-production.up.railway.app'
+  const API = 'https://agrikalcer-backend-production.up.railway.app'
 
   useEffect(() => {
     const currentUser = storage.get('USER')

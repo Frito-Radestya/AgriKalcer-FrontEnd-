@@ -29,6 +29,14 @@ export function Plants() {
     notes: '',
   })
 
+  const [selectedPlantId, setSelectedPlantId] = useState(null)
+  const [showHarvestForm, setShowHarvestForm] = useState(false)
+  const [harvestFormData, setHarvestFormData] = useState({
+    harvestDate: new Date().toISOString().split('T')[0],
+    quantity: '',
+    notes: ''
+  })
+
   const handleSubmit = (e) => {
     e.preventDefault()
     
@@ -41,23 +49,40 @@ export function Plants() {
     handleCloseModal()
   }
 
+  const handleHarvestSubmit = async (e) => {
+    e.preventDefault()
+    if (!selectedPlantId) return
+    
+    try {
+      await addHarvest(selectedPlantId, harvestFormData)
+      setShowHarvestForm(false)
+      setSelectedPlantId(null)
+      // Reset form setelah submit berhasil
+      setHarvestFormData({
+        harvestDate: new Date().toISOString().split('T')[0],
+        quantity: '',
+        notes: ''
+      })
+    } catch (error) {
+      console.error('Error adding harvest:', error)
+    }
+  }
+
   const handleEdit = (plant) => {
-    // plant di sini sudah dalam bentuk yang dinormalisasi dari DataContext
+    // Pastikan plant yang diedit memiliki data yang lengkap
     setEditingPlant(plant)
     setFormData({
       plantType: plant.plantType || '',
       plantName: plant.plantName || '',
-      plantDate: plant.plantDate || new Date().toLocaleDateString('en-CA'),
-      // Kita tidak menyimpan landId di objek plant yang dinormalisasi,
-      // jadi user bisa memilih ulang lahannya saat edit bila perlu.
-      landId: '',
-      newLandName: plant.landName ? '' : '',
-      newLandArea: '',
-      newLat: -7.7956,
-      newLng: 110.3695,
-      seedType: '',
-      seedAmount: '',
-      notes: plant.notes || '',
+      plantDate: plant.plantDate ? plant.plantDate.split('T')[0] : new Date().toISOString().split('T')[0],
+      landId: plant.landId || '',
+      newLandName: '',
+      newLandArea: plant.landArea || '',
+      newLat: plant.lat || -7.7956,
+      newLng: plant.lng || 110.3695,
+      seedType: plant.seedType || '',
+      seedAmount: plant.seedAmount || '',
+      notes: plant.notes || ''
     })
     setIsModalOpen(true)
   }
@@ -66,6 +91,16 @@ export function Plants() {
     if (confirm('Yakin ingin menghapus data tanaman ini?')) {
       deletePlant(id)
     }
+  }
+
+  const handleAddHarvest = (plantId) => {
+    setSelectedPlantId(plantId)
+    setShowHarvestForm(true)
+    setHarvestFormData({
+      harvestDate: new Date().toISOString().split('T')[0],
+      quantity: '',
+      notes: ''
+    })
   }
 
   const handleCloseModal = () => {
